@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTOS Interface</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    body {
+      background-color: black;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Styles */
+    header {
+      border-bottom: 1px solid #1a1a1a;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: black;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .badge {
+      background-color: rgba(30, 64, 175, 0.3);
+      color: #60a5fa;
+      border: 1px solid #1e40af;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #22c55e;
+    }
+
+    .status-dot {
+      height: 8px;
+      width: 8px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    .header-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon {
+      font-size: 16px;
+    }
+
+    .icon-wifi {
+      color: #60a5fa;
+    }
+
+    .icon-bolt {
+      color: #facc15;
+    }
+
+    .icon-database {
+      color: #c084fc;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr 2fr;
+      }
+    }
+
+    /* Card Styles */
+    .card {
+      background-color: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 16px 8px 16px;
+    }
+
+    .card-title {
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .card-description {
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .card-content {
+      padding: 16px;
+    }
+
+    /* Left Panel Styles */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      background-color: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 4px;
+      color: white;
+      font-family: monospace;
+    }
+
+    .search-button {
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      height: 28px;
+    }
+
+    .search-button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .target-info {
+      border: 1px solid #374151;
+      border-radius: 6px;
+      padding: 12px;
+      background-color: rgba(31, 41, 55, 0.5);
+      display: none;
+    }
+
+    .target-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .target-avatar {
+      height: 48px;
+      width: 48px;
+      background-color: #4b5563;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .target-details h3 {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .target-details p {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .target-badges {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .badge-red {
+      background-color: rgba(185, 28, 28, 0.3);
+      color: #f87171;
+      border: 1px solid #b91c1c;
+    }
+
+    .badge-blue {
+      background-color: rgba(30, 64, 175, 0.3);
+      color: #60a5fa;
+      border: 1px solid #1e40af;
+    }
+
+    .target-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-button {
+      background-color: transparent;
+      color: white;
+      border: 1px solid #374151;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-button:hover {
+      background-color: #374151;
+    }
+
+    .scanning-indicator {
+      border: 1px solid #ca8a04;
+      border-radius: 6px;
+      padding: 12px;
+      background-color: rgba(161, 98, 7, 0.2);
+      animation: pulse 2s infinite;
+      display: none;
+    }
+
+    .scanning-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #facc15;
+      font-size: 14px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background-color: #1f2937;
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      background-color: #facc15;
+      width: 0%;
+      animation: progress 2s ease-in-out;
+    }
+
+    /* Quick Hacks Grid */
+    .quick-hacks-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Tabs Styles */
+    .tabs {
+      width: 100%;
+    }
+
+    .tabs-list {
+      display: flex;
+      background-color: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .tab-trigger {
+      flex: 1;
+      padding: 8px 16px;
+      text-align: center;
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      color: white;
+      font-family: monospace;
+    }
+
+    .tab-trigger.active {
+      background-color: rgba(30, 64, 175, 0.3);
+      color: #60a5fa;
+    }
+
+    .tab-content {
+      margin-top: 8px;
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Map Styles */
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      background-color: #1f2937;
+      overflow: hidden;
+    }
+
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(12, 1fr);
+    }
+
+    .grid-cell {
+      border: 1px solid rgba(55, 65, 81, 0.3);
+    }
+
+    .map-elements {
+      position: absolute;
+      inset: 0;
+    }
+
+    .road-horizontal {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 32px;
+      background-color: rgba(55, 65, 81, 0.5);
+    }
+
+    .road-vertical {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 32px;
+      background-color: rgba(55, 65, 81, 0.5);
+    }
+
+    .building {
+      position: absolute;
+      background-color: rgba(75, 85, 99, 0.7);
+      border: 1px solid rgba(107, 114, 128, 0.5);
+    }
+
+    .poi {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: ping 2s infinite;
+    }
+
+    .poi::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+    }
+
+    .poi-blue {
+      background-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .poi-blue::after {
+      background-color: #60a5fa;
+    }
+
+    .poi-green {
+      background-color: rgba(34, 197, 94, 0.5);
+    }
+
+    .poi-green::after {
+      background-color: #4ade80;
+    }
+
+    .poi-red {
+      background-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .poi-red::after {
+      background-color: #f87171;
+    }
+
+    .target-location {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid #facc15;
+      border-radius: 50%;
+      animation: ping 2s infinite;
+      display: none;
+    }
+
+    .target-location::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background-color: rgba(250, 204, 21, 0.5);
+      border: 1px solid #fbbf24;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+    }
+
+    .map-hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .map-coordinates {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot {
+      height: 8px;
+      width: 8px;
+      border-radius: 50%;
+    }
+
+    .scan-lines {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.05), transparent);
+      background-size: 100% 200%;
+      animation: scanline 2s linear infinite;
+    }
+
+    /* Camera Grid Styles */
+    .camera-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .camera-feed {
+      border: 1px solid #1f2937;
+      background-color: rgba(31, 41, 55, 0.5);
+      height: 192px;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .camera-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-size: 12px;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .camera-location {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      font-size: 12px;
+      color: #60a5fa;
+    }
+
+    .camera-status {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+    }
+
+    /* Power Grid Styles */
+    .substation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .substation {
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      padding: 12px;
+      background-color: rgba(31, 41, 55, 0.5);
+    }
+
+    .substation-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .substation-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-indicator {
+      height: 8px;
+      width: 8px;
+      border-radius: 50%;
+    }
+
+    .status-text {
+      font-size: 12px;
+    }
+
+    .status-green {
+      background-color: #22c55e;
+    }
+
+    .status-text-green {
+      color: #4ade80;
+    }
+
+    .status-yellow {
+      background-color: #facc15;
+    }
+
+    .status-text-yellow {
+      color: #fbbf24;
+    }
+
+    .substation-load {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .power-distribution {
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      padding: 16px;
+      background-color: rgba(31, 41, 55, 0.5);
+    }
+
+    .distribution-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .distribution-item {
+      margin-bottom: 8px;
+    }
+
+    .distribution-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .distribution-bar {
+      height: 4px;
+      background-color: #374151;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .distribution-progress {
+      height: 100%;
+    }
+
+    .progress-blue {
+      background-color: #3b82f6;
+    }
+
+    .progress-purple {
+      background-color: #a855f7;
+    }
+
+    .progress-green {
+      background-color: #22c55e;
+    }
+
+    .progress-red {
+      background-color: #ef4444;
+    }
+
+    /* Footer Styles */
+    footer {
+      border-top: 1px solid #1a1a1a;
+      padding: 8px;
+      font-size: 12px;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      margin-top: auto;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes ping {
+      0% { transform: scale(1); opacity: 1; }
+      75%, 100% { transform: scale(2); opacity: 0; }
+    }
+
+    @keyframes progress {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    @keyframes scanline {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 0% 100%; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .substation-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .camera-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <i class="fa-solid fa-shield-halved icon icon-shield" style="color: #3b82f6;"></i>
+      <span class="logo">CTOS</span>
+      <span class="badge">v2.0</span>
+    </div>
+    <div class="header-right">
+      <div class="connection-status">
+        <div class="status-dot"></div>
+        CONNECTED
+      </div>
+      <div class="header-icons">
+        <i class="fa-solid fa-wifi icon icon-wifi"></i>
+        <i class="fa-solid fa-bolt icon icon-bolt"></i>
+        <i class="fa-solid fa-database icon icon-database"></i>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <!-- Profiler Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            Profiler
+          </div>
+          <div class="card-description">Scan and identify targets</div>
+        </div>
+        <div class="card-content">
+          <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search target..." class="search-input">
+            <button id="scan-button" class="search-button">Scan</button>
+          </div>
+
+          <div id="target-info" class="target-info">
+            <div class="target-header">
+              <div class="target-avatar">
+                <i class="fa-solid fa-user" style="color: #9ca3af;"></i>
+              </div>
+              <div class="target-details">
+                <h3>John Pearce</h3>
+                <p>Age: 34 • Occupation: IT Specialist</p>
+                <div class="target-badges">
+                  <span class="badge badge-red" style="font-size: 10px;">Income: $86,500</span>
+                  <span class="badge badge-blue" style="font-size: 10px;">Criminal: None</span>
+                </div>
+              </div>
+            </div>
+            <div class="target-actions">
+              <button class="action-button">
+                <i class="fa-solid fa-lock" style="font-size: 12px;"></i> Bank
+              </button>
+              <button class="action-button">
+                <i class="fa-solid fa-wifi" style="font-size: 12px;"></i> Phone
+              </button>
+              <button class="action-button">
+                <i class="fa-solid fa-database" style="font-size: 12px;"></i> Records
+              </button>
+              <button class="action-button">
+                <i class="fa-solid fa-camera" style="font-size: 12px;"></i> Cameras
+              </button>
+            </div>
+          </div>
+
+          <div id="scanning-indicator" class="scanning-indicator">
+            <div class="scanning-header">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>Scanning target...</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Hacks Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-bolt"></i>
+            Quick Hacks
+          </div>
+          <div class="card-description">City infrastructure controls</div>
+        </div>
+        <div class="card-content">
+          <div class="quick-hacks-grid">
+            <button class="action-button">
+              <i class="fa-solid fa-camera"></i> Cameras
+            </button>
+            <button class="action-button">
+              <i class="fa-solid fa-bolt"></i> Power Grid
+            </button>
+            <button class="action-button">
+              <i class="fa-solid fa-map-pin"></i> Traffic Lights
+            </button>
+            <button class="action-button">
+              <i class="fa-solid fa-lock"></i> Doors
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div class="main-panel">
+      <div class="tabs">
+        <div class="tabs-list">
+          <button class="tab-trigger active" data-tab="map">City Map</button>
+          <button class="tab-trigger" data-tab="cameras">CCTV Network</button>
+          <button class="tab-trigger" data-tab="grid">Power Grid</button>
+        </div>
+
+        <!-- Map Tab -->
+        <div id="map-tab" class="tab-content active">
+          <div class="card">
+            <div class="card-content" style="padding: 0;">
+              <div class="map-container">
+                <!-- Grid lines -->
+                <div class="map-grid">
+                  <!-- Grid cells will be added by JavaScript -->
+                </div>
+
+                <!-- Map elements -->
+                <div class="map-elements">
+                  <!-- Roads -->
+                  <div class="road-horizontal" style="top: 25%;"></div>
+                  <div class="road-horizontal" style="top: 66.7%;"></div>
+                  <div class="road-vertical" style="left: 33.3%;"></div>
+                  <div class="road-vertical" style="left: 75%;"></div>
+
+                  <!-- Buildings -->
+                  <div class="building" style="top: 10%; left: 10%; width: 15%; height: 15%;"></div>
+                  <div class="building" style="top: 10%; left: 40%; width: 20%; height: 10%;"></div>
+                  <div class="building" style="top: 40%; left: 50%; width: 15%; height: 20%;"></div>
+                  <div class="building" style="top: 70%; left: 20%; width: 10%; height: 15%;"></div>
+                  <div class="building" style="top: 30%; left: 80%; width: 10%; height: 25%;"></div>
+
+                  <!-- Points of interest -->
+                  <div class="poi poi-blue" style="top: 20%; left: 20%;"></div>
+                  <div class="poi poi-green" style="top: 45%; left: 60%;"></div>
+                  <div class="poi poi-red" style="top: 75%; left: 25%;"></div>
+
+                  <!-- Target location (hidden by default) -->
+                  <div id="target-location" class="target-location" style="top: 35%; left: 45%;"></div>
+                </div>
+
+                <!-- HUD overlay -->
+                <div class="map-hud">
+                  <div class="map-coordinates">
+                    <div>GRID: 34.21 / 78.55</div>
+                    <div>ZOOM: 400m</div>
+                  </div>
+
+                  <div class="map-legend">
+                    <div class="legend-item">
+                      <div class="legend-dot" style="background-color: #60a5fa;"></div>
+                      CCTV Cameras
+                    </div>
+                    <div class="legend-item">
+                      <div class="legend-dot" style="background-color: #4ade80;"></div>
+                      Power Nodes
+                    </div>
+                    <div class="legend-item">
+                      <div class="legend-dot" style="background-color: #f87171;"></div>
+                      Traffic Controls
+                    </div>
+                  </div>
+
+                  <!-- Scan lines effect -->
+                  <div class="scan-lines"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cameras Tab -->
+        <div id="cameras-tab" class="tab-content">
+          <div class="card">
+            <div class="card-content">
+              <div class="camera-grid">
+                <div class="camera-feed">
+                  <div class="camera-label">
+                    <i class="fa-solid fa-camera" style="font-size: 12px;"></i> CAM_01
+                  </div>
+                  <div class="camera-location">DOWNTOWN</div>
+                  <div class="camera-status">No Signal</div>
+                </div>
+                <div class="camera-feed">
+                  <div class="camera-label">
+                    <i class="fa-solid fa-camera" style="font-size: 12px;"></i> CAM_02
+                  </div>
+                  <div class="camera-location">CENTRAL PARK</div>
+                  <div class="camera-status">No Signal</div>
+                </div>
+                <div class="camera-feed">
+                  <div class="camera-label">
+                    <i class="fa-solid fa-camera" style="font-size: 12px;"></i> CAM_03
+                  </div>
+                  <div class="camera-location">MAIN STREET</div>
+                  <div class="camera-status">No Signal</div>
+                </div>
+                <div class="camera-feed">
+                  <div class="camera-label">
+                    <i class="fa-solid fa-camera" style="font-size: 12px;"></i> CAM_04
+                  </div>
+                  <div class="camera-location">SUBWAY</div>
+                  <div class="camera-status">No Signal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Power Grid Tab -->
+        <div id="grid-tab" class="tab-content">
+          <div class="card">
+            <div class="card-content">
+              <div class="substation-grid">
+                <div class="substation">
+                  <div class="substation-name">North Substation</div>
+                  <div class="substation-status">
+                    <div class="status-indicator status-green"></div>
+                    <div class="status-text status-text-green">ONLINE</div>
+                  </div>
+                  <div class="substation-load">Load: 78%</div>
+                </div>
+                <div class="substation">
+                  <div class="substation-name">Central Substation</div>
+                  <div class="substation-status">
+                    <div class="status-indicator status-green"></div>
+                    <div class="status-text status-text-green">ONLINE</div>
+                  </div>
+                  <div class="substation-load">Load: 92%</div>
+                </div>
+                <div class="substation">
+                  <div class="substation-name">South Substation</div>
+                  <div class="substation-status">
+                    <div class="status-indicator status-yellow"></div>
+                    <div class="status-text status-text-yellow">WARNING</div>
+                  </div>
+                  <div class="substation-load">Load: 97%</div>
+                </div>
+              </div>
+
+              <div class="power-distribution">
+                <div class="distribution-title">Power Distribution</div>
+                <div class="distribution-item">
+                  <div class="distribution-header">
+                    <span>Residential</span>
+                    <span>42%</span>
+                  </div>
+                  <div class="distribution-bar">
+                    <div class="distribution-progress progress-blue" style="width: 42%;"></div>
+                  </div>
+                </div>
+                <div class="distribution-item">
+                  <div class="distribution-header">
+                    <span>Commercial</span>
+                    <span>35%</span>
+                  </div>
+                  <div class="distribution-bar">
+                    <div class="distribution-progress progress-purple" style="width: 35%;"></div>
+                  </div>
+                </div>
+                <div class="distribution-item">
+                  <div class="distribution-header">
+                    <span>Industrial</span>
+                    <span>18%</span>
+                  </div>
+                  <div class="distribution-bar">
+                    <div class="distribution-progress progress-green" style="width: 18%;"></div>
+                  </div>
+                </div>
+                <div class="distribution-item">
+                  <div class="distribution-header">
+                    <span>Government</span>
+                    <span>5%</span>
+                  </div>
+                  <div class="distribution-bar">
+                    <div class="distribution-progress progress-red" style="width: 5%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>CTOS v2.0 • Blume Corporation</div>
+    <div>Access Level: Administrator</div>
+  </footer>
+
+  <script>
+    // Create grid cells for the map
+    const mapGrid = document.querySelector('.map-grid');
+    for (let i = 0; i < 144; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      mapGrid.appendChild(cell);
+    }
+
+    // Tab functionality
+    const tabTriggers = document.querySelectorAll('.tab-trigger');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabTriggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        // Remove active class from all triggers and contents
+        tabTriggers.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        // Add active class to clicked trigger and corresponding content
+        trigger.classList.add('active');
+        const tabId = trigger.getAttribute('data-tab');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+
+    // Scan functionality
+    const scanButton = document.getElementById('scan-button');
+    const targetInfo = document.getElementById('target-info');
+    const scanningIndicator = document.getElementById('scanning-indicator');
+    const targetLocation = document.getElementById('target-location');
+    const searchInput = document.getElementById('search-input');
+
+    let isHacking = false;
+    let targetSelected = false;
+
+    scanButton.addEventListener('click', () => {
+      if (isHacking) return;
+      
+      isHacking = true;
+      targetInfo.style.display = 'none';
+      scanningIndicator.style.display = 'block';
+      
+      // Reset progress animation
+      const progress = scanningIndicator.querySelector('.progress');
+      progress.style.animation = 'none';
+      progress.offsetHeight; // Trigger reflow
+      progress.style.animation = 'progress 2s ease-in-out';
+      
+      setTimeout(() => {
+        isHacking = false;
+        scanningIndicator.style.display = 'none';
+        targetInfo.style.display = 'block';
+        targetLocation.style.display = 'block';
+        targetSelected = true;
+        
+        // Clear search input
+        searchInput.value = '';
+      }, 2000);
+    });
+
+    // Action buttons functionality
+    const actionButtons = document.querySelectorAll('.action-button');
+    actionButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Flash button when clicked
+        button.style.backgroundColor = '#374151';
+        setTimeout(() => {
+          button.style.backgroundColor = 'transparent';
+        }, 200);
+      });
+    });
+  </script>
+</body>
+</html>
