@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablero Futurista</title>
+  <style>
+    /* Estilos base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    :root {
+      --cyan-400: #22d3ee;
+      --cyan-500: #06b6d4;
+      --blue-400: #60a5fa;
+      --blue-500: #3b82f6;
+      --blue-600: #2563eb;
+      --blue-700: #1d4ed8;
+      --purple-400: #c084fc;
+      --purple-500: #a855f7;
+      --pink-500: #ec4899;
+      --green-400: #4ade80;
+      --green-500: #22c55e;
+      --amber-400: #fbbf24;
+      --amber-500: #f59e0b;
+      --red-500: #ef4444;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --black: #000000;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(to bottom right, var(--black), var(--slate-900));
+      color: var(--slate-100);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      margin-bottom: 1.5rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: bold;
+      background: linear-gradient(to right, var(--cyan-400), var(--blue-500));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .search-bar {
+      display: none;
+      align-items: center;
+      gap: 0.25rem;
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 9999px;
+      padding: 0.375rem 0.75rem;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    @media (min-width: 768px) {
+      .search-bar {
+        display: flex;
+      }
+    }
+
+    .search-bar input {
+      background-color: transparent;
+      border: none;
+      color: var(--slate-100);
+      font-size: 0.875rem;
+      width: 10rem;
+      outline: none;
+    }
+
+    .search-bar input::placeholder {
+      color: var(--slate-500);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .icon-button {
+      background: transparent;
+      border: none;
+      color: var(--slate-400);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-button:hover {
+      color: var(--slate-100);
+      background-color: rgba(51, 65, 85, 0.3);
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: -0.25rem;
+      right: -0.25rem;
+      height: 0.5rem;
+      width: 0.5rem;
+      background-color: var(--cyan-500);
+      border-radius: 9999px;
+      animation: pulse 2s infinite;
+    }
+
+    .avatar {
+      height: 2.5rem;
+      width: 2.5rem;
+      border-radius: 9999px;
+      background-color: var(--slate-700);
+      color: var(--cyan-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* Grid layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+    }
+
+    .col-span-12 {
+      grid-column: span 12 / span 12;
+    }
+
+    @media (min-width: 768px) {
+      .md\:col-span-3 {
+        grid-column: span 3 / span 3;
+      }
+      .md\:col-span-9 {
+        grid-column: span 9 / span 9;
+      }
+      .md\:col-span-6 {
+        grid-column: span 6 / span 6;
+      }
+      .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .md\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .lg\:col-span-2 {
+        grid-column: span 2 / span 2;
+      }
+      .lg\:col-span-7 {
+        grid-column: span 7 / span 7;
+      }
+      .lg\:col-span-3 {
+        grid-column: span 3 / span 3;
+      }
+    }
+
+    /* Card styles */
+    .card {
+      background-color: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 0.5rem;
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      color: var(--slate-100);
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-title svg {
+      margin-right: 0.5rem;
+    }
+
+    .card-content {
+      padding: 1rem;
+    }
+
+    .card-footer {
+      padding: 1rem;
+      border-top: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 9999px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge-outline {
+      background-color: rgba(30, 41, 59, 0.5);
+      color: var(--cyan-400);
+      border: 1px solid rgba(6, 182, 212, 0.5);
+    }
+
+    .badge-green {
+      background-color: rgba(34, 197, 94, 0.2);
+      color: var(--green-400);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge-amber {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: var(--amber-400);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-blue {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: var(--blue-400);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-dot {
+      display: flex;
+      align-items: center;
+    }
+
+    .badge-dot::before {
+      content: "";
+      display: block;
+      height: 0.375rem;
+      width: 0.375rem;
+      border-radius: 9999px;
+      background-color: currentColor;
+      margin-right: 0.25rem;
+      animation: pulse 2s infinite;
+    }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      color: var(--slate-400);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      color: var(--slate-100);
+      background-color: rgba(51, 65, 85, 0.3);
+    }
+
+    .nav-item.active {
+      background-color: rgba(30, 41, 59, 0.7);
+      color: var(--cyan-400);
+    }
+
+    .nav-item svg {
+      margin-right: 0.5rem;
+    }
+
+    /* Status indicators */
+    .status-item {
+      margin-bottom: 0.75rem;
+    }
+
+    .status-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+
+    .status-label {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+    }
+
+    .status-value {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+    }
+
+    .progress-bar {
+      height: 0.375rem;
+      background-color: var(--slate-800);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+    }
+
+    .progress-fill-cyan {
+      background: linear-gradient(to right, var(--cyan-500), var(--blue-500));
+    }
+
+    .progress-fill-green {
+      background: linear-gradient(to right, var(--green-500), var(--green-400));
+    }
+
+    .progress-fill-blue {
+      background: linear-gradient(to right, var(--blue-500), var(--blue-400));
+    }
+
+    .progress-fill-purple {
+      background: linear-gradient(to right, var(--purple-500), var(--pink-500));
+    }
+
+    /* Metric cards */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .metric-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .metric-card {
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card-cyan {
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .metric-card-purple {
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .metric-card-blue {
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-title {
+      font-size: 0.875rem;
+      color: var(--slate-400);
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(to right, var(--slate-100), var(--slate-300));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .metric-detail {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+    }
+
+    .metric-trend {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+    }
+
+    .metric-glow {
+      position: absolute;
+      bottom: -1.5rem;
+      right: -1.5rem;
+      height: 4rem;
+      width: 4rem;
+      border-radius: 9999px;
+      background: linear-gradient(to right, var(--cyan-500), var(--blue-500));
+      opacity: 0.2;
+      filter: blur(1rem);
+    }
+
+    /* Tabs */
+    .tabs {
+      width: 100%;
+    }
+
+    .tabs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .tabs-list {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.5);
+      padding: 0.25rem;
+      border-radius: 0.375rem;
+    }
+
+    .tab-trigger {
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-trigger.active {
+      background-color: var(--slate-700);
+      color: var(--cyan-400);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-legend {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--slate-400);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .legend-dot {
+      height: 0.5rem;
+      width: 0.5rem;
+      border-radius: 9999px;
+      margin-right: 0.25rem;
+    }
+
+    .legend-dot-cyan {
+      background-color: var(--cyan-500);
+    }
+
+    .legend-dot-purple {
+      background-color: var(--purple-500);
+    }
+
+    .legend-dot-blue {
+      background-color: var(--blue-500);
+    }
+
+    /* Performance chart */
+    .chart-container {
+      height: 16rem;
+      width: 100%;
+      position: relative;
+      background-color: rgba(30, 41, 59, 0.3);
+      border-radius: 0.5rem;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      overflow: hidden;
+    }
+
+    .chart-y-axis {
+      position: absolute;
+      left: 0.5rem;
+      top: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem 0;
+    }
+
+    .chart-y-label {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+    }
+
+    .chart-grid {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem 2.5rem;
+    }
+
+    .chart-grid-line {
+      border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+      width: 100%;
+    }
+
+    .chart-bars {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 0.5rem;
+      z-index: 10;
+      position: relative;
+    }
+
+    .chart-bar-group {
+      display: flex;
+      gap: 0.125rem;
+    }
+
+    .chart-bar {
+      width: 0.25rem;
+      border-top-left-radius: 0.125rem;
+      border-top-right-radius: 0.125rem;
+    }
+
+    .chart-bar-cyan {
+      background: linear-gradient(to top, var(--cyan-500), var(--cyan-400));
+    }
+
+    .chart-bar-purple {
+      background: linear-gradient(to top, var(--purple-500), var(--purple-400));
+    }
+
+    .chart-bar-blue {
+      background: linear-gradient(to top, var(--blue-500), var(--blue-400));
+    }
+
+    .chart-x-axis {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+    }
+
+    .chart-x-label {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+    }
+
+    .chart-overlay {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background-color: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(4px);
+      border-radius: 0.375rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    .chart-overlay-label {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+    }
+
+    .chart-overlay-value {
+      font-size: 1.125rem;
+      font-family: monospace;
+      color: var(--cyan-400);
+    }
+
+    /* Process table */
+    .process-table {
+      background-color: rgba(30, 41, 59, 0.3);
+      border-radius: 0.5rem;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      overflow: hidden;
+    }
+
+    .process-header {
+      display: grid;
+      grid-template-columns: 1fr 4fr 2fr 2fr 2fr 1fr;
+      font-size: 0.75rem;
+      color: var(--slate-400);
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      background-color: rgba(30, 41, 59, 0.5);
+    }
+
+    .process-row {
+      display: grid;
+      grid-template-columns: 1fr 4fr 2fr 2fr 2fr 1fr;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+    }
+
+    .process-row:hover {
+      background-color: rgba(30, 41, 59, 0.5);
+    }
+
+    .process-row:last-child {
+      border-bottom: none;
+    }
+
+    .process-pid {
+      color: var(--slate-500);
+    }
+
+    .process-name {
+      color: var(--slate-300);
+    }
+
+    .process-user {
+      color: var(--slate-400);
+    }
+
+    .process-cpu {
+      color: var(--cyan-400);
+    }
+
+    .process-memory {
+      color: var(--purple-400);
+    }
+
+    /* Storage items */
+    .storage-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .storage-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .storage-item {
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 0.375rem;
+      padding: 0.75rem;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    .storage-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .storage-name {
+      font-size: 0.875rem;
+      color: var(--slate-300);
+    }
+
+    .storage-type {
+      background-color: rgba(51, 65, 85, 0.5);
+      color: var(--slate-300);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      font-size: 0.75rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+    }
+
+    .storage-usage {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    .storage-size {
+      color: var(--slate-500);
+    }
+
+    .storage-percentage {
+      color: var(--slate-400);
+    }
+
+    .storage-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .storage-free {
+      color: var(--slate-500);
+    }
+
+    .storage-details {
+      background: transparent;
+      border: none;
+      color: var(--slate-400);
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+    }
+
+    .storage-details:hover {
+      color: var(--slate-100);
+      background-color: rgba(51, 65, 85, 0.3);
+    }
+
+    /* Alert items */
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .alert-icon {
+      padding: 0.25rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.125rem;
+    }
+
+    .alert-icon-info {
+      background-color: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .alert-icon-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .alert-icon-success {
+      background-color: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .alert-icon-update {
+      background-color: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-header {
+      display: flex;
+      align-items: center;
+    }
+
+    .alert-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--slate-200);
+    }
+
+    .alert-time {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      margin-left: 0.5rem;
+    }
+
+    .alert-description {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+      margin-top: 0.25rem;
+    }
+
+    /* Communication items */
+    .comm-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+    }
+
+    .comm-item.unread {
+      background-color: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    .comm-avatar {
+      height: 2rem;
+      width: 2rem;
+      border-radius: 9999px;
+      background-color: var(--slate-700);
+      color: var(--cyan-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+
+    .comm-content {
+      flex: 1;
+    }
+
+    .comm-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .comm-sender {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--slate-200);
+    }
+
+    .comm-time {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+    }
+
+    .comm-message {
+      font-size: 0.75rem;
+      color: var(--slate-400);
+      margin-top: 0.25rem;
+    }
+
+    .comm-indicator {
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    .comm-dot {
+      height: 0.5rem;
+      width: 0.5rem;
+      border-radius: 9999px;
+      background-color: var(--cyan-500);
+    }
+
+    .comm-input {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 0.5rem;
+    }
+
+    .comm-text-input {
+      flex: 1;
+      background-color: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 0.375rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      color: var(--slate-100);
+    }
+
+    .comm-text-input:focus {
+      outline: none;
+      border-color: var(--cyan-500);
+      box-shadow: 0 0 0 1px var(--cyan-500);
+    }
+
+    .comm-button {
+      background-color: var(--blue-600);
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .comm-button:hover {
+      background-color: var(--blue-700);
+    }
+
+    .comm-button-cyan {
+      background-color: var(--cyan-600);
+    }
+
+    .comm-button-cyan:hover {
+      background-color: var(--cyan-700);
+    }
+
+    /* System time */
+    .time-container {
+      background: linear-gradient(to bottom right, var(--slate-800), var(--slate-900));
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      text-align: center;
+    }
+
+    .time-label {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      margin-bottom: 0.25rem;
+      font-family: monospace;
+    }
+
+    .time-value {
+      font-size: 1.875rem;
+      font-family: monospace;
+      color: var(--cyan-400);
+      margin-bottom: 0.25rem;
+    }
+
+    .time-date {
+      font-size: 0.875rem;
+      color: var(--slate-400);
+    }
+
+    .time-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      padding: 1rem;
+    }
+
+    .time-stat {
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 0.375rem;
+      padding: 0.75rem;
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    .time-stat-label {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      margin-bottom: 0.25rem;
+    }
+
+    .time-stat-value {
+      font-size: 0.875rem;
+      font-family: monospace;
+      color: var(--slate-200);
+    }
+
+    /* Action buttons */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .action-button {
+      height: auto;
+      padding: 0.75rem;
+      border: 1px solid var(--slate-700);
+      background-color: rgba(30, 41, 59, 0.5);
+      color: var(--slate-100);
+      border-radius: 0.375rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      transition: all 0.2s;
+    }
+
+    .action-button:hover {
+      background-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .action-icon {
+      color: var(--cyan-500);
+    }
+
+    .action-label {
+      font-size: 0.75rem;
+    }
+
+    /* Resource allocation */
+    .resource-item {
+      margin-bottom: 1rem;
+    }
+
+    .resource-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+
+    .resource-label {
+      font-size: 0.875rem;
+      color: var(--slate-400);
+    }
+
+    .resource-value {
+      font-size: 0.75rem;
+      color: var(--cyan-400);
+    }
+
+    .resource-value-purple {
+      color: var(--purple-400);
+    }
+
+    .resource-value-blue {
+      color: var(--blue-400);
+    }
+
+    .resource-slider {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .resource-slider-track {
+      flex: 1;
+      height: 0.25rem;
+      background-color: var(--slate-800);
+      border-radius: 9999px;
+      position: relative;
+    }
+
+    .resource-slider-thumb {
+      position: absolute;
+      height: 1rem;
+      width: 1rem;
+      background-color: var(--cyan-500);
+      border-radius: 9999px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    .resource-slider-value {
+      color: var(--cyan-400);
+      font-size: 0.875rem;
+    }
+
+    /* Environment controls */
+    .env-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .env-control:last-child {
+      margin-bottom: 0;
+    }
+
+    .env-label {
+      display: flex;
+      align-items: center;
+    }
+
+    .env-icon {
+      color: var(--cyan-500);
+      margin-right: 0.5rem;
+    }
+
+    .env-text {
+      font-size: 0.875rem;
+      color: var(--slate-400);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 2.5rem;
+      height: 1.25rem;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--slate-700);
+      transition: .4s;
+      border-radius: 9999px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 0.875rem;
+      width: 0.875rem;
+      left: 0.25rem;
+      bottom: 0.1875rem;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--cyan-500);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(1.125rem);
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .loading-spinner {
+      position: relative;
+      width: 6rem;
+      height: 6rem;
+    }
+
+    .loading-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+
+    .loading-ring-1 {
+      border: 4px solid var(--cyan-500);
+      border-opacity: 0.3;
+      animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    .loading-ring-2 {
+      inset: 0.5rem;
+      border: 4px solid transparent;
+      border-top-color: var(--cyan-500);
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-ring-3 {
+      inset: 1rem;
+      border: 4px solid transparent;
+      border-right-color: var(--purple-500);
+      animation: spin 1.5s linear infinite reverse;
+    }
+
+    .loading-ring-4 {
+      inset: 1.5rem;
+      border: 4px solid transparent;
+      border-bottom-color: var(--blue-500);
+      animation: spin 2s linear infinite;
+    }
+
+    .loading-ring-5 {
+      inset: 2rem;
+      border: 4px solid transparent;
+      border-left-color: var(--green-500);
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 1rem;
+      color: var(--cyan-500);
+      font-family: monospace;
+      font-size: 0.875rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes ping {
+      75%, 100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Canvas for particle effect */
+    #particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background particle effect -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="flex flex-col items-center">
+      <div class="loading-spinner">
+        <div class="loading-ring loading-ring-1"></div>
+        <div class="loading-ring loading-ring-2"></div>
+        <div class="loading-ring loading-ring-3"></div>
+        <div class="loading-ring loading-ring-4"></div>
+        <div class="loading-ring loading-ring-5"></div>
+      </div>
+      <div class="loading-text">SISTEMA INICIALIZANDO</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-500">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        </svg>
+        <span class="logo-text">Sistema operativo NEXUS</span>
+      </div>
+
+      <div class="header-actions">
+        <div class="search-bar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Buscar en el sistema...">
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button class="icon-button" aria-label="Notificaciones">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
+            <span class="notification-dot"></span>
+          </button>
+
+          <button id="theme-toggle" class="icon-button" aria-label="Cambiar tema">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            </svg>
+          </button>
+
+          <div class="avatar">CM</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <div class="grid">
+      <!-- Sidebar -->
+      <div class="col-span-12 md:col-span-3 lg:col-span-2">
+        <div class="card h-full">
+          <div class="card-content">
+            <nav class="nav">
+              <div class="nav-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Panel
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Diagnóstico
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                </svg>
+                Centro de datos
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+                Red
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Seguridad
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="4 17 10 11 4 5"></polyline>
+                  <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
+                Consola
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Comunicaciones
+              </div>
+              <div class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                Ajustes
+              </div>
+            </nav>
+
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+              <div class="text-xs text-slate-500 mb-2 font-mono">ESTADO DEL SISTEMA</div>
+              <div class="space-y-3">
+                <div class="status-item">
+                  <div class="status-header">
+                    <div class="status-label">Sistemas centrales</div>
+                    <div class="status-value">85%</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill progress-fill-cyan" style="width: 85%"></div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <div class="status-header">
+                    <div class="status-label">Seguridad</div>
+                    <div class="status-value">75%</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill progress-fill-green" style="width: 75%"></div>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <div class="status-header">
+                    <div class="status-label">Red</div>
+                    <div class="status-value">92%</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill progress-fill-blue" style="width: 92%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main dashboard -->
+      <div class="col-span-12 md:col-span-9 lg:col-span-7">
+        <div style="display: grid; gap: 1.5rem;">
+          <!-- System overview -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-500">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Descripción general del sistema
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="badge badge-outline badge-dot">VIVO</div>
+                <button class="icon-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="metric-grid">
+                <div class="metric-card metric-card-cyan">
+                  <div class="metric-header">
+                    <div class="metric-title">Uso de CPU</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-500">
+                      <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                      <rect x="9" y="9" width="6" height="6"></rect>
+                      <line x1="9" y1="2" x2="9" y2="4"></line>
+                      <line x1="15" y1="2" x2="15" y2="4"></line>
+                      <line x1="9" y1="20" x2="9" y2="22"></line>
+                      <line x1="15" y1="20" x2="15" y2="22"></line>
+                      <line x1="20" y1="9" x2="22" y2="9"></line>
+                      <line x1="20" y1="14" x2="22" y2="14"></line>
+                      <line x1="2" y1="9" x2="4" y2="9"></line>
+                      <line x1="2" y1="14" x2="4" y2="14"></line>
+                    </svg>
+                  </div>
+                  <div class="metric-value" id="cpu-usage">42%</div>
+                  <div class="metric-detail">3.8 GHz | 12 Cores</div>
+                  <div class="metric-trend">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500">
+                      <rect x="2" y="2" width="20" height="20" rx="2"></rect>
+                      <line x1="8" y1="9" x2="8" y2="15"></line>
+                      <line x1="12" y1="6" x2="12" y2="18"></line>
+                      <line x1="16" y1="12" x2="16" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="metric-glow"></div>
+                </div>
+                <div class="metric-card metric-card-purple">
+                  <div class="metric-header">
+                    <div class="metric-title">Memoria</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-500">
+                      <path d="M21 5H3v14h18V5zm-9 13h-4v-4h4v4zm0-6h-4V8h4v4zm6 6h-4v-4h4v4zm0-6h-4V8h4v4z"></path>
+                    </svg>
+                  </div>
+                  <div class="metric-value" id="memory-usage">68%</div>
+                  <div class="metric-detail">16.4 GB / 24 GB</div>
+                  <div class="metric-trend">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                      <path d="M3 3v18h18"></path>
+                      <path d="m19 9-5 5-4-4-3 3"></path>
+                    </svg>
+                  </div>
+                  <div class="metric-glow"></div>
+                </div>
+                <div class="metric-card metric-card-blue">
+                  <div class="metric-header">
+                    <div class="metric-title">Red</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                      <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                      <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                      <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                  </div>
+                  <div class="metric-value" id="network-status">92%</div>
+                  <div class="metric-detail">1.2 GB/s | 42ms</div>
+                  <div class="metric-trend">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500" style="transform: rotate(180deg)">
+                      <rect x="2" y="2" width="20" height="20" rx="2"></rect>
+                      <line x1="8" y1="9" x2="8" y2="15"></line>
+                      <line x1="12" y1="6" x2="12" y2="18"></line>
+                      <line x1="16" y1="12" x2="16" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="metric-glow"></div>
+                </div>
+              </div>
+
+              <div style="margin-top: 2rem;">
+                <div class="tabs">
+                  <div class="tabs-header">
+                    <div class="tabs-list">
+                      <div class="tab-trigger active" data-tab="performance">Actuación</div>
+                      <div class="tab-trigger" data-tab="processes">Procesos</div>
+                      <div class="tab-trigger" data-tab="storage">Almacenamiento</div>
+                    </div>
+
+                    <div class="tab-legend">
+                      <div class="legend-item">
+                        <div class="legend-dot legend-dot-cyan"></div>
+                        CPU
+                      </div>
+                      <div class="legend-item">
+                        <div class="legend-dot legend-dot-purple"></div>
+                        Memoria
+                      </div>
+                      <div class="legend-item">
+                        <div class="legend-dot legend-dot-blue"></div>
+                        Red
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tab-content active" id="performance-tab">
+                    <div class="chart-container">
+                      <div class="chart-y-axis">
+                        <div class="chart-y-label">100%</div>
+                        <div class="chart-y-label">75%</div>
+                        <div class="chart-y-label">50%</div>
+                        <div class="chart-y-label">25%</div>
+                        <div class="chart-y-label">0%</div>
+                      </div>
+
+                      <div class="chart-grid">
+                        <div class="chart-grid-line"></div>
+                        <div class="chart-grid-line"></div>
+                        <div class="chart-grid-line"></div>
+                        <div class="chart-grid-line"></div>
+                        <div class="chart-grid-line"></div>
+                      </div>
+
+                      <div class="chart-bars" id="performance-chart">
+                        <!-- Chart bars will be generated by JavaScript -->
+                      </div>
+
+                      <div class="chart-x-axis">
+                        <div class="chart-x-label">00:00</div>
+                        <div class="chart-x-label">06:00</div>
+                        <div class="chart-x-label">12:00</div>
+                        <div class="chart-x-label">18:00</div>
+                        <div class="chart-x-label">24:00</div>
+                      </div>
+
+                      <div class="chart-overlay">
+                        <div class="chart-overlay-label">Carga del sistema</div>
+                        <div class="chart-overlay-value" id="system-load">42%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tab-content" id="processes-tab">
+                    <div class="process-table">
+                      <div class="process-header">
+                        <div>PID</div>
+                        <div>Proceso</div>
+                        <div>Usuario</div>
+                        <div>CPU</div>
+                        <div>Memoria</div>
+                        <div>Estado</div>
+                      </div>
+
+                      <div class="process-row">
+                        <div class="process-pid">1024</div>
+                        <div class="process-name">system_core.exe</div>
+                        <div class="process-user">SISTEMA</div>
+                        <div class="process-cpu">12.4%</div>
+                        <div class="process-memory">345 MB</div>
+                        <div>
+                          <div class="badge badge-green">activo</div>
+                        </div>
+                      </div>
+                      <div class="process-row">
+                        <div class="process-pid">1842</div>
+                        <div class="process-name">nexus_service.exe</div>
+                        <div class="process-user">SISTEMA</div>
+                        <div class="process-cpu">8.7%</div>
+                        <div class="process-memory">128 MB</div>
+                        <div>
+                          <div class="badge badge-green">activo</div>
+                        </div>
+                      </div>
+                      <div class="process-row">
+                        <div class="process-pid">2156</div>
+                        <div class="process-name">security_monitor.exe</div>
+                        <div class="process-user">ADMIN</div>
+                        <div class="process-cpu">5.2%</div>
+                        <div class="process-memory">96 MB</div>
+                        <div>
+                          <div class="badge badge-green">activo</div>
+                        </div>
+                      </div>
+                      <div class="process-row">
+                        <div class="process-pid">3012</div>
+                        <div class="process-name">network_manager.exe</div>
+                        <div class="process-user">SISTEMA</div>
+                        <div class="process-cpu">3.8%</div>
+                        <div class="process-memory">84 MB</div>
+                        <div>
+                          <div class="badge badge-green">activo</div>
+                        </div>
+                      </div>
+                      <div class="process-row">
+                        <div class="process-pid">4268</div>
+                        <div class="process-name">user_interface.exe</div>
+                        <div class="process-user">USUARIO</div>
+                        <div class="process-cpu">15.3%</div>
+                        <div class="process-memory">256 MB</div>
+                        <div>
+                          <div class="badge badge-green">activo</div>
+                        </div>
+                      </div>
+                      <div class="process-row">
+                        <div class="process-pid">5124</div>
+                        <div class="process-name">data_analyzer.exe</div>
+                        <div class="process-user">ADMIN</div>
+                        <div class="process-cpu">22.1%</div>
+                        <div class="process-memory">512 MB</div>
+                        <div>
+                          <div class="badge badge-green">activo</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="tab-content" id="storage-tab">
+                    <div class="storage-grid">
+                      <div class="storage-item">
+                        <div class="storage-header">
+                          <div class="storage-name">Unidad Sistema (C:)</div>
+                          <div class="storage-type">SSD</div>
+                        </div>
+                        <div>
+                          <div class="storage-usage">
+                            <div class="storage-size">324 GB / 512 GB</div>
+                            <div class="storage-percentage">63%</div>
+                          </div>
+                          <div class="progress-bar">
+                            <div class="progress-fill progress-fill-cyan" style="width: 63%"></div>
+                          </div>
+                        </div>
+                        <div class="storage-footer">
+                          <div class="storage-free">Libre: 188 GB</div>
+                          <button class="storage-details">Detalles</button>
+                        </div>
+                      </div>
+                      <div class="storage-item">
+                        <div class="storage-header">
+                          <div class="storage-name">Unidad Datos (D:)</div>
+                          <div class="storage-type">HDD</div>
+                        </div>
+                        <div>
+                          <div class="storage-usage">
+                            <div class="storage-size">1285 GB / 2048 GB</div>
+                            <div class="storage-percentage">63%</div>
+                          </div>
+                          <div class="progress-bar">
+                            <div class="progress-fill progress-fill-cyan" style="width: 63%"></div>
+                          </div>
+                        </div>
+                        <div class="storage-footer">
+                          <div class="storage-free">Libre: 763 GB</div>
+                          <button class="storage-details">Detalles</button>
+                        </div>
+                      </div>
+                      <div class="storage-item">
+                        <div class="storage-header">
+                          <div class="storage-name">Unidad Respaldo (E:)</div>
+                          <div class="storage-type">HDD</div>
+                        </div>
+                        <div>
+                          <div class="storage-usage">
+                            <div class="storage-size">1865 GB / 4096 GB</div>
+                            <div class="storage-percentage">46%</div>
+                          </div>
+                          <div class="progress-bar">
+                            <div class="progress-fill progress-fill-green" style="width: 46%"></div>
+                          </div>
+                        </div>
+                        <div class="storage-footer">
+                          <div class="storage-free">Libre: 2231 GB</div>
+                          <button class="storage-details">Detalles</button>
+                        </div>
+                      </div>
+                      <div class="storage-item">
+                        <div class="storage-header">
+                          <div class="storage-name">Unidad Externa (F:)</div>
+                          <div class="storage-type">SSD</div>
+                        </div>
+                        <div>
+                          <div class="storage-usage">
+                            <div class="storage-size">210 GB / 1024 GB</div>
+                            <div class="storage-percentage">21%</div>
+                          </div>
+                          <div class="progress-bar">
+                            <div class="progress-fill progress-fill-green" style="width: 21%"></div>
+                          </div>
+                        </div>
+                        <div class="storage-footer">
+                          <div class="storage-free">Libre: 814 GB</div>
+                          <button class="storage-details">Detalles</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seguridad y Alertas -->
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <div class="md:grid-cols-2" style="display: grid; gap: 1.5rem;">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Estado de Seguridad
+                  </div>
+                </div>
+                <div class="card-content">
+                  <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div class="text-sm text-slate-400">Firewall</div>
+                      <div class="badge badge-green">Activo</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div class="text-sm text-slate-400">Detección de Intrusiones</div>
+                      <div class="badge badge-green">Activo</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div class="text-sm text-slate-400">Encriptación</div>
+                      <div class="badge badge-green">Activo</div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div class="text-sm text-slate-400">Base de Amenazas</div>
+                      <div class="text-sm text-cyan-400">
+                        Actualizado <span class="text-slate-500">hace 12 min</span>
+                      </div>
+                    </div>
+
+                    <div style="padding-top: 0.5rem; margin-top: 0.5rem; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <div class="text-sm font-medium">Nivel de Seguridad</div>
+                        <div class="text-sm text-cyan-400" id="security-level">75%</div>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%; background: linear-gradient(to right, var(--green-500), var(--cyan-500));"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    Alertas del Sistema
+                  </div>
+                </div>
+                <div class="card-content">
+                  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="alert-item">
+                      <div class="alert-icon alert-icon-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                      </div>
+                      <div class="alert-content">
+                        <div class="alert-header">
+                          <div class="alert-title">Escaneo de Seguridad Completado</div>
+                          <div class="alert-time">14:32:12</div>
+                        </div>
+                        <div class="alert-description">No se detectaron amenazas en el escaneo del sistema</div>
+                      </div>
+                    </div>
+                    <div class="alert-item">
+                      <div class="alert-icon alert-icon-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                      </div>
+                      <div class="alert-content">
+                        <div class="alert-header">
+                          <div class="alert-title">Pico de Ancho de Banda Detectado</div>
+                          <div class="alert-time">13:45:06</div>
+                        </div>
+                        <div class="alert-description">Actividad inusual de red en el puerto 443</div>
+                      </div>
+                    </div>
+                    <div class="alert-item">
+                      <div class="alert-icon alert-icon-update">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-500">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="7 10 12 15 17 10"></polyline>
+                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                      </div>
+                      <div class="alert-content">
+                        <div class="alert-header">
+                          <div class="alert-title">Actualización del Sistema Disponible</div>
+                          <div class="alert-time">09:12:45</div>
+                        </div>
+                        <div class="alert-description">Versión 12.4.5 lista para instalar</div>
+                      </div>
+                    </div>
+                    <div class="alert-item">
+                      <div class="alert-icon alert-icon-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </div>
+                      <div class="alert-content">
+                        <div class="alert-header">
+                          <div class="alert-title">Respaldo Completado</div>
+                          <div class="alert-time">04:30:00</div>
+                        </div>
+                        <div class="alert-description">Respaldo incremental a unidad E: exitoso</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comunicaciones -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  Registro de Comunicaciones
+                </div>
+                <div class="badge badge-blue">4 Mensajes Nuevos</div>
+              </div>
+              <div class="card-content">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <div class="comm-item unread">
+                    <div class="comm-avatar">AS</div>
+                    <div class="comm-content">
+                      <div class="comm-header">
+                        <div class="comm-sender">Administrador del Sistema</div>
+                        <div class="comm-time">15:42:12</div>
+                      </div>
+                      <div class="comm-message">El mantenimiento programado ocurrirá a las 02:00. Todos los sistemas estarán temporalmente fuera de línea.</div>
+                    </div>
+                    <div class="comm-indicator">
+                      <div class="comm-dot"></div>
+                    </div>
+                  </div>
+                  <div class="comm-item unread">
+                    <div class="comm-avatar">MS</div>
+                    <div class="comm-content">
+                      <div class="comm-header">
+                        <div class="comm-sender">Módulo de Seguridad</div>
+                        <div class="comm-time">14:30:45</div>
+                      </div>
+                      <div class="comm-message">Intento de inicio de sesión inusual bloqueado desde IP 192.168.1.45. Añadido a la lista de vigilancia.</div>
+                    </div>
+                    <div class="comm-indicator">
+                      <div class="comm-dot"></div>
+                    </div>
+                  </div>
+                  <div class="comm-item unread">
+                    <div class="comm-avatar">CR</div>
+                    <div class="comm-content">
+                      <div class="comm-header">
+                        <div class="comm-sender">Control de Red</div>
+                        <div class="comm-time">12:15:33</div>
+                      </div>
+                      <div class="comm-message">Asignación de ancho de banda ajustada para servicios prioritarios durante horas pico.</div>
+                    </div>
+                    <div class="comm-indicator">
+                      <div class="comm-dot"></div>
+                    </div>
+                  </div>
+                  <div class="comm-item unread">
+                    <div class="comm-avatar">CD</div>
+                    <div class="comm-content">
+                      <div class="comm-header">
+                        <div class="comm-sender">Centro de Datos</div>
+                        <div class="comm-time">09:05:18</div>
+                      </div>
+                      <div class="comm-message">Verificación de respaldo completa. Todas las comprobaciones de integridad de datos aprobadas.</div>
+                    </div>
+                    <div class="comm-indicator">
+                      <div class="comm-dot"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="comm-input">
+                  <input type="text" placeholder="Escribe un mensaje..." class="comm-text-input">
+                  <button class="comm-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                      <line x1="12" y1="19" x2="12" y2="22"></line>
+                    </svg>
+                  </button>
+                  <button class="comm-button comm-button-cyan">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div class="col-span-12 lg:col-span-3">
+        <div style="display: grid; gap: 1.5rem;">
+          <!-- System time -->
+          <div class="card">
+            <div class="time-container">
+              <div class="time-label">HORA DEL SISTEMA</div>
+              <div class="time-value" id="system-time">00:00:00</div>
+              <div class="time-date" id="system-date">1 de enero de 2023</div>
+            </div>
+            <div class="time-stats">
+              <div class="time-stat">
+                <div class="time-stat-label">Tiempo activo</div>
+                <div class="time-stat-value">14d 06:42:18</div>
+              </div>
+              <div class="time-stat">
+                <div class="time-stat-label">Zona horaria</div>
+                <div class="time-stat-value">UTC-08:00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Acciones rápidas</div>
+            </div>
+            <div class="card-content">
+              <div class="action-grid">
+                <button class="action-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span class="action-label">Análisis de seguridad</span>
+                </button>
+                <button class="action-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
+                  </svg>
+                  <span class="action-label">Sincronizar datos</span>
+                </button>
+                <button class="action-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span class="action-label">Respaldo</span>
+                </button>
+                <button class="action-button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <polyline points="4 17 10 11 4 5"></polyline>
+                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                  </svg>
+                  <span class="action-label">Consola</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resource allocation -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Asignación de recursos</div>
+            </div>
+            <div class="card-content">
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="resource-item">
+                  <div class="resource-header">
+                    <div class="resource-label">Potencia de procesamiento</div>
+                    <div class="resource-value">42% asignado</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill progress-fill-cyan" style="width: 42%"></div>
+                  </div>
+                </div>
+
+                <div class="resource-item">
+                  <div class="resource-header">
+                    <div class="resource-label">Asignación de memoria</div>
+                    <div class="resource-value resource-value-purple">68% asignado</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill progress-fill-purple" style="width: 68%"></div>
+                  </div>
+                </div>
+
+                <div class="resource-item">
+                  <div class="resource-header">
+                    <div class="resource-label">Ancho de banda de red</div>
+                    <div class="resource-value resource-value-blue">35% asignado</div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill progress-fill-blue" style="width: 35%"></div>
+                  </div>
+                </div>
+
+                <div style="padding-top: 0.5rem; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+                  <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.875rem;">
+                    <div class="text-slate-400">Nivel de prioridad</div>
+                    <div class="resource-slider">
+                      <div class="resource-slider-track">
+                        <div class="resource-slider-thumb" style="left: 60%"></div>
+                      </div>
+                      <span class="resource-slider-value">3/5</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Environment controls -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Controles del entorno</div>
+            </div>
+            <div class="card-content">
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="env-control">
+                  <div class="env-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="env-icon">
+                      <path d="M2 12a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V7H2Z"></path>
+                      <path d="M6 11V7"></path>
+                      <path d="M10 11V7"></path>
+                      <path d="M14 11V7"></path>
+                      <path d="M18 11V7"></path>
+                    </svg>
+                    <span class="env-text">Gestión de energía</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="env-control">
+                  <div class="env-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="env-icon">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span class="env-text">Protocolo de seguridad</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="env-control">
+                  <div class="env-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="env-icon">
+                      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                    <span class="env-text">Modo ahorro de energía</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="env-control">
+                  <div class="env-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="env-icon">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="m4.93 4.93 14.14 14.14"></path>
+                    </svg>
+                    <span class="env-text">Apagado automático</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Efecto de partículas
+    (function() {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Establecer tamaño del canvas
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Clase Partícula
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 3 + 1;
+          this.speedX = (Math.random() - 0.5) * 0.5;
+          this.speedY = (Math.random() - 0.5) * 0.5;
+          this.color = `rgba(${Math.floor(Math.random() * 100) + 100}, ${Math.floor(Math.random() * 100) + 150}, ${Math.floor(Math.random() * 55) + 200}, ${Math.random() * 0.5 + 0.2})`;
+        }
+
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+
+          if (this.x > canvas.width) this.x = 0;
+          if (this.x < 0) this.x = canvas.width;
+          if (this.y > canvas.height) this.y = 0;
+          if (this.y < 0) this.y = canvas.height;
+        }
+
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Crear partículas
+      const particles = [];
+      const particleCount = 100;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+
+      // Bucle de animación
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (const particle of particles) {
+          particle.update();
+          particle.draw();
+        }
+        
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+
+    // Cambio de pestañas
+    document.querySelectorAll('.tab-trigger').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        // Quitar clase activa de todos los triggers y contenido
+        document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Añadir clase activa al trigger clickeado y su contenido correspondiente
+        trigger.classList.add('active');
+        document.getElementById(`${trigger.dataset.tab}-tab`).classList.add('active');
+      });
+    });
+
+    // Cambio de tema
+    const themeToggle = document.getElementById('theme-toggle');
+    let isDark = true;
+
+    themeToggle.addEventListener('click', () => {
+      isDark = !isDark;
+      if (isDark) {
+        document.body.style.background = 'linear-gradient(to bottom right, var(--black), var(--slate-900))';
+        themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>';
+      } else {
+        document.body.style.background = 'linear-gradient(to bottom right, var(--slate-100), var(--slate-300))';
+        document.body.style.color = 'var(--slate-900)';
+        themeToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
+      }
+    });
+
+    // Pantalla de carga
+    setTimeout(() => {
+      document.getElementById('loading-overlay').style.display = 'none';
+    }, 2000);
+
+    // Gráfico de rendimiento
+    function generatePerformanceChart() {
+      const chartContainer = document.getElementById('performance-chart');
+      chartContainer.innerHTML = '';
+
+      for (let i = 0; i < 24; i++) {
+        const cpuHeight = Math.floor(Math.random() * 60) + 20;
+        const memHeight = Math.floor(Math.random() * 40) + 40;
+        const netHeight = Math.floor(Math.random() * 30) + 30;
+
+        const barGroup = document.createElement('div');
+        barGroup.className = 'chart-bar-group';
+
+        const cpuBar = document.createElement('div');
+        cpuBar.className = 'chart-bar chart-bar-cyan';
+        cpuBar.style.height = `${cpuHeight}%`;
+
+        const memBar = document.createElement('div');
+        memBar.className = 'chart-bar chart-bar-purple';
+        memBar.style.height = `${memHeight}%`;
+
+        const netBar = document.createElement('div');
+        netBar.className = 'chart-bar chart-bar-blue';
+        netBar.style.height = `${netHeight}%`;
+
+        barGroup.appendChild(cpuBar);
+        barGroup.appendChild(memBar);
+        barGroup.appendChild(netBar);
+
+        chartContainer.appendChild(barGroup);
+      }
+    }
+
+    generatePerformanceChart();
+
+    // Actualizar hora del sistema
+    function updateSystemTime() {
+      const now = new Date();
+      const timeElement = document.getElementById('system-time');
+      const dateElement = document.getElementById('system-date');
+      
+      // Formatear hora como HH:MM:SS
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+      
+      // Formatear fecha como Día de Mes de Año
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      dateElement.textContent = now.toLocaleDateString('es-ES', options);
+    }
+
+    // Actualizar métricas
+    function updateMetrics() {
+      const cpuUsage = Math.floor(Math.random() * 30) + 30;
+      const memoryUsage = Math.floor(Math.random() * 20) + 60;
+      const networkStatus = Math.floor(Math.random() * 15) + 80;
+      const systemStatus = Math.floor(Math.random() * 10) + 80;
+      
+      document.getElementById('cpu-usage').textContent = `${cpuUsage}%`;
+      document.getElementById('memory-usage').textContent = `${memoryUsage}%`;
+      document.getElementById('network-status').textContent = `${networkStatus}%`;
+      document.getElementById('system-load').textContent = `${cpuUsage}%`;
+    }
+
+    // Llamadas iniciales
+    updateSystemTime();
+    updateMetrics();
+
+    // Establecer intervalos para actualizaciones
+    setInterval(updateSystemTime, 1000);
+    setInterval(updateMetrics, 3000);
+    setInterval(generatePerformanceChart, 5000);
+  </script>
+</body>
+</html>
