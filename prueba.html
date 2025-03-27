@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Diagnóstico Técnico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .drop-zone:hover {
+            background-color: #f8f9fa;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+        .feature-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 0.75rem;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .feature-text {
+            margin-top: 0.5rem;
+        }
+        .info-section {
+            background-color: #f0f7ff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .progress {
+            height: 0.5rem;
+        }
+        .progress-bar-good {
+            background-color: #198754;
+        }
+        .progress-bar-warning {
+            background-color: #ffc107;
+        }
+        .progress-bar-danger {
+            background-color: #dc3545;
+        }
+        .card {
+            margin-bottom: 1rem;
+        }
+        .tab-content {
+            padding-top: 1.5rem;
+        }
+        .icon-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+        .recommendation {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .recommendation-high {
+            border-left: 4px solid #dc3545;
+        }
+        .recommendation-medium {
+            border-left: 4px solid #ffc107;
+        }
+        .recommendation-low {
+            border-left: 4px solid #0d6efd;
+        }
+        .benefit-list {
+            margin-top: 0.5rem;
+            padding-left: 1.5rem;
+        }
+        .benefit-item {
+            margin-bottom: 0.25rem;
+        }
+        .summary-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-critical {
+            border-left-color: #dc3545;
+        }
+        .summary-warning {
+            border-left-color: #ffc107;
+        }
+        .summary-good {
+            border-left-color: #198754;
+        }
+        #upload-section, #report-section {
+            transition: opacity 0.5s ease-in-out;
+        }
+        @media print {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            #upload-section, .no-print {
+                display: none !important;
+            }
+            #report-section {
+                display: block !important;
+            }
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .tab-content > .tab-pane {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            .nav-tabs {
+                display: none !important;
+            }
+            .tab-content > .tab-pane {
+                margin-bottom: 2rem;
+            }
+            .tab-content > .tab-pane::before {
+                content: attr(data-tab-title);
+                font-size: 1.5rem;
+                font-weight: bold;
+                margin-bottom: 1rem;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Sección de carga de archivos -->
+        <div id="upload-section">
+            <h1 class="text-center mb-4">Sistema de Diagnóstico Técnico</h1>
+            
+            <div class="info-section mb-4">
+                <h5>¿Qué hace esta herramienta?</h5>
+                <p class="mb-0">
+                    Esta aplicación analiza archivos de diagnóstico de hardware (CrystalDiskInfo y HWiNFO) para generar un informe detallado 
+                    sobre el estado de tu equipo, identificar problemas y proporcionar recomendaciones personalizadas para mejorar su rendimiento.
+                </p>
+            </div>
+            
+            <div class="row mb-5">
+                <div class="col-md-4 text-center">
+                    <div class="feature-icon mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                    </div>
+                    <h5>Diagnóstico Profundo</h5>
+                    <p class="text-muted feature-text">Análisis detallado de todos los componentes de hardware de tu equipo</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="feature-icon mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/>
+                        </svg>
+                    </div>
+                    <h5>Soluciones Personalizadas</h5>
+                    <p class="text-muted feature-text">Recomendaciones específicas para mejorar el rendimiento de tu equipo</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="feature-icon mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        </svg>
+                    </div>
+                    <h5>Informes Imprimibles</h5>
+                    <p class="text-muted feature-text">Genera informes que puedes imprimir o guardar como PDF</p>
+                </div>
+            </div>
+            
+            <div class="card mx-auto" style="max-width: 700px;">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle p-3 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-hdd" viewBox="0 0 16 16">
+                                <path d="M4.5 11a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 10.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                                <path d="M16 11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V9.51c0-.418.105-.83.305-1.197l2.472-4.531A1.5 1.5 0 0 1 4.094 3h7.812a1.5 1.5 0 0 1 1.317.782l2.472 4.53c.2.368.305.78.305 1.198V11zM3.655 4.26 1.592 8.043C1.724 8.014 1.86 8 2 8h12c.14 0 .276.014.408.042L12.345 4.26a.5.5 0 0 0-.439-.26H4.094a.5.5 0 0 0-.44.26zM1 10v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z"/>
+                            </svg>
+                        </div>
+                        <h2 class="h4 mb-2">Análisis de Hardware</h2>
+                        <p class="text-muted">
+                            Sube archivos de diagnóstico (CrystalDiskInfo, HWiNFO) para generar un informe detallado.
+                        </p>
+                    </div>
+                    
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="drop-zone" id="drop-zone">
+                            <input type="file" id="file-input" name="files[]" multiple accept=".txt,.log" class="d-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-upload text-muted mb-3" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                            </svg>
+                            <h5>Arrastra archivos aquí o haz clic para seleccionar</h5>
+                            <p class="text-muted">Soporta archivos de CrystalDiskInfo (.txt) y HWiNFO (.log)</p>
+                        </div>
+                        
+                        <div id="file-list" class="mt-3 d-none">
+                            <h6>Archivos seleccionados:</h6>
+                            <div id="selected-files" class="mb-3"></div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" id="submit-btn" class="btn btn-primary px-4" disabled>
+                                Generar diagnóstico
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="error-alert" class="alert alert-danger mt-3 d-none"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de informe (inicialmente oculta) -->
+        <div id="report-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">INFORME DE DIAGNÓSTICO TÉCNICO</h1>
+                <div class="no-print">
+                    <button id="print-btn" class="btn btn-primary me-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-2" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        Imprimir informe
+                    </button>
+                    <button id="back-btn" class="btn btn-outline-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left me-2" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                        </svg>
+                        Volver
+                    </button>
+                </div>
+            </div>
+            
+            <p class="text-muted mb-4" id="report-model-date"></p>
+            
+            <!-- Resumen ejecutivo -->
+            <div id="summary-box" class="summary-box">
+                <h4>Resumen Ejecutivo</h4>
+                <p class="mb-2" id="summary-text"></p>
+                <p class="mb-0" id="main-recommendation"></p>
+            </div>
+            
+            <!-- Pestañas del informe -->
+            <ul class="nav nav-tabs no-print" id="reportTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab" aria-controls="specs" aria-selected="true">Especificaciones</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="health-tab" data-bs-toggle="tab" data-bs-target="#health" type="button" role="tab" aria-controls="health" aria-selected="false">Estado de Componentes</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="false">Análisis de Rendimiento</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="reportTabContent">
+                <!-- Pestaña de Especificaciones -->
+                <div class="tab-pane fade show active" id="specs" role="tabpanel" aria-labelledby="specs-tab" data-tab-title="Especificaciones del Sistema">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-text me-2" viewBox="0 0 16 16">
+                                <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zM5 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1H5z"/>
+                                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+                            </svg>
+                            <h5 class="card-title mb-0">Especificaciones del Sistema</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3 d-flex">
+                                        <div class="icon-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu text-primary" viewBox="0 0 16 16">
+                                                <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="fw-medium mb-0">Procesador</p>
+                                            <p class="text-muted small mb-0" id="spec-cpu-model"></p>
+                                            <p class="text-muted small" id="spec-cpu-cores"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3 d-flex">
+                                        <div class="icon-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-memory text-primary" viewBox="0 0 16 16">
+                                                <path d="M1 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4.586a1 1 0 0 0 .707-.293l.353-.353a.5.5 0 0 1 .708 0l.353.353a1 1 0 0 0 .707.293H15a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H1Zm.5 1h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm5 0h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm4.5.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4ZM2 10v2H1v-2h1Zm2 0v2H3v-2h1Zm2 0v2H5v-2h1Zm3 0v2H8v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="fw-medium mb-0">Memoria RAM</p>
+                                            <p class="text-muted small mb-0" id="spec-ram-capacity"></p>
+                                            <p class="text-muted small" id="spec-ram-config"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3 d-flex">
+                                        <div class="icon-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-hdd text-primary" viewBox="0 0 16 16">
+                                                <path d="M4.5 11a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 10.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                                                <path d="M16 11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V9.51c0-.418.105-.83.305-1.197l2.472-4.531A1.5 1.5 0 0 1 4.094 3h7.812a1.5 1.5 0 0 1 1.317.782l2.472 4.53c.2.368.305.78.305 1.198V11zM3.655 4.26 1.592 8.043C1.724 8.014 1.86 8 2 8h12c.14 0 .276.014.408.042L12.345 4.26a.5.5 0 0 0-.439-.26H4.094a.5.5 0 0 0-.44.26zM1 10v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="fw-medium mb-0">Almacenamiento</p>
+                                            <p class="text-muted small mb-0" id="spec-storage-model"></p>
+                                            <p class="text-muted small" id="spec-storage-details"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3 d-flex">
+                                        <div class="icon-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-display text-primary" viewBox="0 0 16 16">
+                                                <path d="M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4c0 .667.083 1.167.25 1.5H11a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1h.75c.167-.333.25-.833.25-1.5H2s-2 0-2-2V4zm1.398-.855a.758.758 0 0 0-.254.302A1.46 1.46 0 0 0 1 4.01V10c0 .325.078.502.145.602.07.105.17.188.302.254a1.464 1.464 0 0 0 .538.143L2.01 11H14c.325 0 .502-.078.602-.145a.758.758 0 0 0 .254-.302 1.464 1.464 0 0 0 .143-.538L15 9.99V4c0-.325-.078-.502-.145-.602a.757.757 0 0 0-.302-.254A1.46 1.46 0 0 0 13.99 3H2c-.325 0-.502.078-.602.145z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="fw-medium mb-0">Pantalla</p>
+                                            <p class="text-muted small" id="spec-display"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3 d-flex">
+                                        <div class="icon-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-wifi text-primary" viewBox="0 0 16 16">
+                                                <path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.827.802 6.716 2.164.205.148.49.13.668-.049z"/>
+                                                <path d="M13.229 8.271a.482.482 0 0 0-.063-.745A9.455 9.455 0 0 0 8 6c-1.905 0-3.68.56-5.166 1.526a.48.48 0 0 0-.063.745.525.525 0 0 0 .652.065A8.46 8.46 0 0 1 8 7a8.46 8.46 0 0 1 4.576 1.336c.206.132.48.108.653-.065zm-2.183 2.183c.226-.226.185-.605-.1-.75A6.473 6.473 0 0 0 8 9c-1.06 0-2.062.254-2.946.704-.285.145-.326.524-.1.75l.015.015c.16.16.407.19.611.09A5.478 5.478 0 0 1 8 10c.868 0 1.69.201 2.42.56.203.1.45.07.61-.091l.016-.015zM9.06 12.44c.196-.196.198-.52-.04-.66A1.99 1.99 0 0 0 8 11.5a1.99 1.99 0 0 0-1.02.28c-.238.14-.236.464-.04.66l.706.706a.5.5 0 0 0 .707 0l.707-.707z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="fw-medium mb-0">Conectividad</p>
+                                            <p class="text-muted small" id="spec-connectivity"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3 d-flex">
+                                        <div class="icon-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning-charge text-primary" viewBox="0 0 16 16">
+                                                <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41 4.157 8.5z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="fw-medium mb-0">Sistema Operativo</p>
+                                            <p class="text-muted small" id="spec-os"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña de Estado de Componentes -->
+                <div class="tab-pane fade" id="health" role="tabpanel" aria-labelledby="health-tab" data-tab-title="Estado de Componentes">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-hdd me-2" viewBox="0 0 16 16">
+                                        <path d="M4.5 11a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 10.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                                        <path d="M16 11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V9.51c0-.418.105-.83.305-1.197l2.472-4.531A1.5 1.5 0 0 1 4.094 3h7.812a1.5 1.5 0 0 1 1.317.782l2.472 4.53c.2.368.305.78.305 1.198V11zM3.655 4.26 1.592 8.043C1.724 8.014 1.86 8 2 8h12c.14 0 .276.014.408.042L12.345 4.26a.5.5 0 0 0-.439-.26H4.094a.5.5 0 0 0-.44.26zM1 10v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z"/>
+                                    </svg>
+                                    <h5 class="card-title mb-0" id="storage-title"></h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small">Vida restante estimada:</span>
+                                            <span class="small fw-medium" id="storage-life-remaining"></span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar" id="storage-life-bar" 
+                                                role="progressbar" 
+                                                style="width: 0%" 
+                                                aria-valuenow="0" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Tiempo de uso actual:</span>
+                                            <span id="storage-hours"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Tiempo restante aproximado:</span>
+                                            <span id="storage-time-remaining"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" id="storage-temp-container">
+                                            <span>Temperatura:</span>
+                                            <span id="storage-temp"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Estado:</span>
+                                            <span class="fw-medium" id="storage-status"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu me-2" viewBox="0 0 16 16">
+                                        <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                                    </svg>
+                                    <h5 class="card-title mb-0">Procesador (CPU)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small">Vida restante estimada:</span>
+                                            <span class="small fw-medium" id="cpu-life-remaining"></span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-good" id="cpu-life-bar"
+                                                role="progressbar" 
+                                                style="width: 80%" 
+                                                aria-valuenow="80" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between mb-1" id="cpu-temp-container">
+                                            <span>Temperatura:</span>
+                                            <span id="cpu-temp"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" id="cpu-load-container">
+                                            <span>Carga actual:</span>
+                                            <span id="cpu-load"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Estado:</span>
+                                            <span class="fw-medium text-success" id="cpu-status"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-battery-half me-2" viewBox="0 0 16 16">
+                                        <path d="M2 6h5v4H2V6z"/>
+                                        <path d="M2 4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H2zm10 1a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h10zm1-3a1.5 1.5 0 0 1 1.5 1.5v.5a.5.5 0 0 1-1 0V3.5A.5.5 0 0 0 13 3H3a.5.5 0 0 0-.5.5V4a.5.5 0 0 1-1 0v-.5A1.5 1.5 0 0 1 3 2h10z"/>
+                                    </svg>
+                                    <h5 class="card-title mb-0">Batería</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small">Capacidad restante:</span>
+                                            <span class="small fw-medium" id="battery-capacity-remaining"></span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar" id="battery-capacity-bar"
+                                                role="progressbar" 
+                                                style="width: 0%" 
+                                                aria-valuenow="0" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Capacidad original:</span>
+                                            <span id="battery-original"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Capacidad actual:</span>
+                                            <span id="battery-current"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" id="battery-cycles-container">
+                                            <span>Ciclos de carga:</span>
+                                            <span id="battery-cycles"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Tiempo por carga:</span>
+                                            <span id="battery-time"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Estado:</span>
+                                            <span class="fw-medium" id="battery-status"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-memory me-2" viewBox="0 0 16 16">
+                                        <path d="M1 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4.586a1 1 0 0 0 .707-.293l.353-.353a.5.5 0 0 1 .708 0l.353.353a1 1 0 0 0 .707.293H15a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H1Zm.5 1h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm5 0h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm4.5.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4ZM2 10v2H1v-2h1Zm2 0v2H3v-2h1Zm2 0v2H5v-2h1Zm3 0v2H8v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Z"/>
+                                    </svg>
+                                    <h5 class="card-title mb-0">Memoria RAM</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small">Vida restante estimada:</span>
+                                            <span class="small fw-medium" id="ram-life-remaining"></span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-good" id="ram-life-bar"
+                                                role="progressbar" 
+                                                style="width: 85%" 
+                                                aria-valuenow="85" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Configuración:</span>
+                                            <span id="ram-config"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" id="ram-speed-container">
+                                            <span>Velocidad:</span>
+                                            <span id="ram-speed"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" id="ram-usage-container">
+                                            <span>Uso actual:</span>
+                                            <span id="ram-usage"></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Estado:</span>
+                                            <span class="fw-medium text-success" id="ram-status"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña de Análisis de Rendimiento -->
+                <div class="tab-pane fade" id="performance" role="tabpanel" aria-labelledby="performance-tab" data-tab-title="Análisis de Rendimiento">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity me-2" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z"/>
+                            </svg>
+                            <h5 class="card-title mb-0">Causas de la Lentitud del Sistema</h5>
+                        </div>
+                        <div class="card-body" id="performance-problems">
+                            <!-- Problemas de rendimiento se generarán dinámicamente aquí -->
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-4">
+                        <div class="d-flex">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16">
+                                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                            </svg>
+                            <div>
+                                <h5 class="alert-heading">Análisis del Disco Duro</h5>
+                                <p id="disk-analysis-summary"></p>
+                                <ul class="mb-0" id="disk-analysis-details">
+                                    <!-- Detalles del análisis del disco se generarán dinámicamente aquí -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning-charge me-2" viewBox="0 0 16 16">
+                                <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41 4.157 8.5z"/>
+                            </svg>
+                            <h5 class="card-title mb-0">Recomendaciones</h5>
+                        </div>
+                        <div class="card-body" id="recommendations">
+                            <!-- Recomendaciones se generarán dinámicamente aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pie de página -->
+            <div class="p-4 text-center border-top text-muted small mt-4">
+                <p class="mb-1" id="report-date"></p>
+                <p class="mb-0">Este diagnóstico se basa en los datos proporcionados por CrystalDiskInfo y HWiNFO64</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading-overlay" class="loading-overlay d-none">
+        <div class="spinner-border text-light loading-spinner" role="status">
+            <span class="visually-hidden">Analizando...</span>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables para la interfaz de usuario
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const selectedFiles = document.getElementById('selected-files');
+            const submitBtn = document.getElementById('submit-btn');
+            const uploadForm = document.getElementById('upload-form');
+            const errorAlert = document.getElementById('error-alert');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const uploadSection = document.getElementById('upload-section');
+            const reportSection = document.getElementById('report-section');
+            const printBtn = document.getElementById('print-btn');
+            const backBtn = document.getElementById('back-btn');
+            
+            // Manejar clic en la zona de arrastre
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Prevenir comportamiento por defecto de arrastrar y soltar
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Resaltar la zona de arrastre cuando se arrastra un archivo sobre ella
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('bg-light');
+                });
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('bg-light');
+                });
+            });
+            
+            // Manejar archivos soltados
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            });
+            
+            // Manejar archivos seleccionados con el input
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+            
+            function handleFiles(files) {
+                if (files.length > 0) {
+                    fileList.classList.remove('d-none');
+                    submitBtn.disabled = false;
+                    
+                    // Limpiar la lista de archivos
+                    selectedFiles.innerHTML = '';
+                    
+                    // Mostrar los archivos seleccionados
+                    Array.from(files).forEach(file => {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        
+                        const fileName = document.createElement('span');
+                        fileName.textContent = file.name;
+                        
+                        const fileSize = document.createElement('span');
+                        fileSize.className = 'text-muted';
+                        fileSize.textContent = formatFileSize(file.size);
+                        
+                        fileItem.appendChild(fileName);
+                        fileItem.appendChild(fileSize);
+                        selectedFiles.appendChild(fileItem);
+                    });
+                }
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' bytes';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                else return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+            
+            // Manejar envío del formulario
+            uploadForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                if (fileInput.files.length === 0) {
+                    showError('Por favor, selecciona al menos un archivo.');
+                    return;
+                }
+                
+                // Mostrar overlay de carga
+                loadingOverlay.classList.remove('d-none');
+                
+                // Leer los archivos y procesarlos
+                const files = Array.from(fileInput.files);
+                const filePromises = files.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            resolve({
+                                name: file.name,
+                                content: e.target.result
+                            });
+                        };
+                        reader.readAsText(file);
+                    });
+                });
+                
+                Promise.all(filePromises)
+                    .then(fileContents => {
+                        // Analizar los archivos
+                        const data = analizar_archivo_diagnostico(fileContents);
+                        
+                        // Ocultar la sección de carga y mostrar el informe
+                        loadingOverlay.classList.add('d-none');
+                        uploadSection.style.display = 'none';
+                        reportSection.style.display = 'block';
+                        
+                        // Generar el informe
+                        generarInforme(data);
+                    })
+                    .catch(error => {
+                        loadingOverlay.classList.add('d-none');
+                        showError('Error al procesar los archivos: ' + error.message);
+                    });
+            });
+            
+            function showError(message) {
+                errorAlert.textContent = message;
+                errorAlert.classList.remove('d-none');
+                setTimeout(() => {
+                    errorAlert.classList.add('d-none');
+                }, 5000);
+            }
+            
+            // Botones del informe
+            printBtn.addEventListener('click', () => {
+                window.print();
+            });
+            
+            backBtn.addEventListener('click', () => {
+                reportSection.style.display = 'none';
+                uploadSection.style.display = 'block';
+            });
+            
+            // Función para analizar archivos de diagnóstico
+            function analizar_archivo_diagnostico(files) {
+                // Inicializar objeto de datos con valores predeterminados
+                const data = {
+                    "modelo": "Equipo desconocido",
+                    "procesador": {
+                        "modelo": "Desconocido",
+                        "nucleos": "Desconocido",
+                        "velocidad": "Desconocido",
+                        "vidaRestante": "4-6 años",
+                        "vidaRestantePorc": 80,
+                        "temperatura": "Normal",
+                        "estado": "Funcionando correctamente",
+                        "carga": 0
+                    },
+                    "ram": {
+                        "capacidad": "Desconocida",
+                        "tipo": "Desconocido",
+                        "velocidad": "Desconocida",
+                        "configuracion": "Desconocida",
+                        "slots_usados": 0,
+                        "slots_totales": 0,
+                        "vidaRestante": "5-7 años",
+                        "vidaRestantePorc": 85,
+                        "estado": "Funcionando correctamente",
+                        "uso": 0
+                    },
+                    "almacenamiento": {
+                        "modelo": "Desconocido",
+                        "tipo": "Desconocido",
+                        "capacidad": "Desconocida",
+                        "interfaz": "Desconocida",
+                        "vidaRestante": 70,
+                        "horasUso": 0,
+                        "tiempoRestante": "1-2 años",
+                        "estado": "Funcional",
+                        "temperatura": "Desconocida",
+                        "espacio_libre": 0,
+                        "espacio_total": 0
+                    },
+                    "bateria": {
+                        "capacidadOriginal": 0,
+                        "capacidadActual": 0,
+                        "capacidadRestante": 0,
+                        "ciclos": 0,
+                        "tiempoCarga": "Desconocido",
+                        "estado": "Desconocido",
+                        "voltaje": "Desconocido",
+                        "fabricante": "Desconocido"
+                    },
+                    "pantalla": "Desconocida",
+                    "conectividad": "Desconocida",
+                    "sistemaOperativo": "Desconocido",
+                    "fecha_fabricacion": "Desconocida",
+                    "problemas": [],
+                    "analisisDisco": {
+                        "resumen": "No se pudo analizar el disco duro en detalle.",
+                        "detalles": []
+                    },
+                    "recomendaciones": []
+                };
+                
+                // Variables para análisis avanzado
+                const problemas_detectados = [];
+                const metricas_rendimiento = {};
+                
+                // Procesar cada archivo
+                for (const file of files) {
+                    const file_content = file.content;
+                    const file_name = file.name.toLowerCase();
+                    
+                    // Determinar tipo de archivo
+                    let file_type = "";
+                    if (file_name.includes("crystaldisk")) {
+                        file_type = "crystaldisk";
+                    } else if (file_name.includes("hwinfo")) {
+                        file_type = "hwinfo";
+                    } else {
+                        // Intentar determinar por contenido
+                        if (file_content.includes("CrystalDiskInfo")) {
+                            file_type = "crystaldisk";
+                        } else if (file_content.includes("HWiNFO")) {
+                            file_type = "hwinfo";
+                        }
+                    }
+                    
+                    // Analizar según tipo de archivo
+                    if (file_type === "crystaldisk") {
+                        // Extraer información del disco duro
+                        
+                        // Modelo del disco
+                        const modelo_match = file_content.match(/Model\s*:\s*([^\r\n]+)/);
+                        if (modelo_match) {
+                            data.almacenamiento.modelo = modelo_match[1].trim();
+                            
+                            // Determinar tipo de disco (SSD o HDD)
+                            const modelo_lower = data.almacenamiento.modelo.toLowerCase();
+                            if (modelo_lower.includes("ssd") || modelo_lower.includes("solid") || 
+                                modelo_lower.includes("nvme") || modelo_lower.includes("flash")) {
+                                data.almacenamiento.tipo = "SSD";
+                            } else {
+                                data.almacenamiento.tipo = "HDD";
+                            }
+                        }
+                        
+                        // Capacidad del disco
+                        const capacidad_match = file_content.match(/Disk Size\s*:\s*([^\r\n]+)/);
+                        if (capacidad_match) {
+                            data.almacenamiento.capacidad = capacidad_match[1].trim();
+                        }
+                        
+                        // Interfaz
+                        const interfaz_match = file_content.match(/Interface\s*:\s*([^\r\n]+)/);
+                        if (interfaz_match) {
+                            data.almacenamiento.interfaz = interfaz_match[1].trim();
+                        }
+                        
+                        // Horas de uso
+                        const horas_match = file_content.match(/Power On Hours\s*:\s*(\d+)/);
+                        if (horas_match) {
+                            data.almacenamiento.horasUso = parseInt(horas_match[1]);
+                            
+                            // Añadir a métricas de rendimiento
+                            metricas_rendimiento.horas_uso_disco = data.almacenamiento.horasUso;
+                        }
+                        
+                        // Estado de salud
+                        const health_match = file_content.match(/Health Status\s*:\s*([^\r\n]+)/);
+                        if (health_match) {
+                            const health_status = health_match[1].trim();
+                            if (health_status.includes("Good")) {
+                                data.almacenamiento.estado = "Funcional";
+                            } else if (health_status.includes("Caution")) {
+                                data.almacenamiento.estado = "Precaución";
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "media",
+                                    "descripcion": "El disco muestra signos de deterioro (estado: Precaución)"
+                                });
+                            } else if (health_status.includes("Bad")) {
+                                data.almacenamiento.estado = "Crítico";
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "alta",
+                                    "descripcion": "El disco está en estado crítico y podría fallar pronto"
+                                });
+                            }
+                        }
+                        
+                        // Temperatura
+                        const temp_match = file_content.match(/Temperature\s*:\s*(\d+)\s*[°C]/);
+                        if (temp_match) {
+                            const temperatura = parseInt(temp_match[1]);
+                            data.almacenamiento.temperatura = `${temperatura}°C`;
+                            
+                            // Evaluar temperatura
+                            if (temperatura > 50) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "media",
+                                    "descripcion": `Temperatura elevada del disco (${temperatura}°C)`
+                                });
+                            } else if (temperatura > 60) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "alta",
+                                    "descripcion": `Temperatura crítica del disco (${temperatura}°C)`
+                                });
+                            }
+                        }
+                        
+                        // Sectores reasignados
+                        const sectores_match = file_content.match(/\[05\].*?Reallocated Sector.*?(\d+)\/(\d+)/);
+                        if (sectores_match) {
+                            const valor_actual = parseInt(sectores_match[1]);
+                            const valor_umbral = parseInt(sectores_match[2]);
+                            
+                            const detalle = {
+                                "nombre": "Sectores Reasignados",
+                                "valor": valor_actual.toString(),
+                                "estado": "Excelente"
+                            };
+                            
+                            if (valor_actual > 0) {
+                                if (valor_actual > valor_umbral) {
+                                    detalle.estado = "Crítico";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "alta",
+                                        "descripcion": `Sectores reasignados por encima del umbral crítico (${valor_actual})`
+                                    });
+                                } else {
+                                    detalle.estado = "Precaución";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "media",
+                                        "descripcion": `Disco con sectores reasignados (${valor_actual})`
+                                    });
+                                }
+                            }
+                            
+                            data.analisisDisco.detalles.push(detalle);
+                        }
+                        
+                        // Sectores pendientes
+                        const pendientes_match = file_content.match(/\[C5\].*?Current Pending.*?(\d+)\/(\d+)/);
+                        if (pendientes_match) {
+                            const valor_actual = parseInt(pendientes_match[1]);
+                            
+                            const detalle = {
+                                "nombre": "Sectores Pendientes",
+                                "valor": valor_actual.toString(),
+                                "estado": "Excelente"
+                            };
+                            
+                            if (valor_actual > 0) {
+                                detalle.estado = "Precaución";
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "media",
+                                    "descripcion": `Disco con sectores pendientes de reasignación (${valor_actual})`
+                                });
+                            }
+                            
+                            data.analisisDisco.detalles.push(detalle);
+                        }
+                        
+                        // Ciclos de carga/descarga
+                        const ciclos_match = file_content.match(/\[C1\].*?Load\/Unload.*?(\d+)\/(\d+).*?\(Data = ([^,]+),/);
+                        if (ciclos_match) {
+                            const ciclos = ciclos_match[3].replace('0', '');
+                            
+                            const detalle = {
+                                "nombre": "Ciclos de Carga/Descarga",
+                                "valor": ciclos,
+                                "estado": "Normal"
+                            };
+                            
+                            try {
+                                const ciclos_num = parseInt(ciclos);
+                                if (ciclos_num > 300000) {
+                                    detalle.estado = "Desgaste avanzado";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "baja",
+                                        "descripcion": `Alto número de ciclos de carga/descarga (${ciclos_num})`
+                                    });
+                                } else if (ciclos_num > 100000) {
+                                    detalle.estado = "Desgaste moderado";
+                                }
+                            } catch (e) {
+                                // Ignorar errores de conversión
+                            }
+                            
+                            data.analisisDisco.detalles.push(detalle);
+                        }
+                        
+                        // Errores CRC
+                        const crc_match = file_content.match(/\[C7\].*?UltraDMA CRC.*?(\d+)\/(\d+).*?\(Data = ([^,]+),/);
+                        if (crc_match) {
+                            const errores = crc_match[3].replace('0', '');
+                            
+                            const detalle = {
+                                "nombre": "Errores CRC UltraDMA",
+                                "valor": errores,
+                                "estado": "Excelente"
+                            };
+                            
+                            try {
+                                const errores_num = parseInt(errores);
+                                if (errores_num > 0) {
+                                    detalle.estado = "Indica algunos problemas ocasionales";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "baja",
+                                        "descripcion": `Errores CRC detectados (${errores_num})`
+                                    });
+                                }
+                                if (errores_num > 10) {
+                                    detalle.estado = "Problemas de comunicación";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "media",
+                                        "descripcion": `Múltiples errores CRC detectados (${errores_num})`
+                                    });
+                                }
+                            } catch (e) {
+                                // Ignorar errores de conversión
+                            }
+                            
+                            data.analisisDisco.detalles.push(detalle);
+                        }
+                        
+                        // Temperatura (como detalle)
+                        if (data.almacenamiento.temperatura !== "Desconocida") {
+                            const detalle = {
+                                "nombre": "Temperatura",
+                                "valor": data.almacenamiento.temperatura,
+                                "estado": "Normal"
+                            };
+                            
+                            try {
+                                const temp_num = parseInt(data.almacenamiento.temperatura.replace("°C", ""));
+                                if (temp_num > 50) {
+                                    detalle.estado = "Elevada";
+                                }
+                                if (temp_num > 60) {
+                                    detalle.estado = "Crítica";
+                                }
+                            } catch (e) {
+                                // Ignorar errores de conversión
+                            }
+                            
+                            data.analisisDisco.detalles.push(detalle);
+                        }
+                        
+                        // Vida restante
+                        const vida_match = file_content.match(/Drive Remaining Life\s*(\d+)%/);
+                        if (vida_match) {
+                            data.almacenamiento.vidaRestante = parseInt(vida_match[1]);
+                            
+                            // Añadir a métricas de rendimiento
+                            metricas_rendimiento.vida_restante_disco = data.almacenamiento.vidaRestante;
+                            
+                            // Evaluar vida restante
+                            if (data.almacenamiento.vidaRestante < 30) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "alta",
+                                    "descripcion": `Vida útil del disco muy reducida (${data.almacenamiento.vidaRestante}%)`
+                                });
+                            } else if (data.almacenamiento.vidaRestante < 50) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "media",
+                                    "descripcion": `Vida útil del disco reducida (${data.almacenamiento.vidaRestante}%)`
+                                });
+                            }
+                        } else {
+                            // Estimar vida restante basado en horas de uso
+                            if (data.almacenamiento.horasUso > 0) {
+                                // Vida típica de un HDD: ~40,000 horas, SSD: ~60,000 horas
+                                const vida_max = data.almacenamiento.tipo === "SSD" ? 60000 : 40000;
+                                const vida_estimada = Math.max(0, Math.min(100, Math.round((1 - (data.almacenamiento.horasUso / vida_max)) * 100)));
+                                data.almacenamiento.vidaRestante = vida_estimada;
+                                
+                                // Añadir a métricas de rendimiento
+                                metricas_rendimiento.vida_restante_disco = vida_estimada;
+                                
+                                // Ajustar tiempo restante
+                                if (vida_estimada < 20) {
+                                    data.almacenamiento.tiempoRestante = "Menos de 6 meses";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "alta",
+                                        "descripcion": `Vida útil del disco muy reducida (estimado: ${vida_estimada}%)`
+                                    });
+                                } else if (vida_estimada < 40) {
+                                    data.almacenamiento.tiempoRestante = "6-12 meses";
+                                    problemas_detectados.push({
+                                        "componente": "almacenamiento",
+                                        "gravedad": "media",
+                                        "descripcion": `Vida útil del disco reducida (estimado: ${vida_estimada}%)`
+                                    });
+                                } else if (vida_estimada < 60) {
+                                    data.almacenamiento.tiempoRestante = "1-2 años";
+                                } else if (vida_estimada < 80) {
+                                    data.almacenamiento.tiempoRestante = "2-3 años";
+                                } else {
+                                    data.almacenamiento.tiempoRestante = "3+ años";
+                                }
+                            }
+                        }
+                        
+                        // Actualizar resumen del análisis del disco
+                        if (data.analisisDisco.detalles.length > 0) {
+                            if (data.almacenamiento.tipo === "SSD") {
+                                data.analisisDisco.resumen = `El SSD ${data.almacenamiento.modelo} muestra `;
+                            } else {
+                                data.analisisDisco.resumen = `El disco duro ${data.almacenamiento.modelo} muestra `;
+                            }
+                            
+                            if (data.almacenamiento.estado === "Funcional") {
+                                data.analisisDisco.resumen += "signos de envejecimiento normal pero sigue siendo funcional:";
+                            } else if (data.almacenamiento.estado === "Precaución") {
+                                data.analisisDisco.resumen += "signos de deterioro que requieren atención:";
+                            } else {
+                                data.analisisDisco.resumen += "signos críticos de fallo inminente:";
+                            }
+                        }
+                    } else if (file_type === "hwinfo") {
+                        // Modelo del equipo
+                        const modelo_match = file_content.match(/Computer Brand Name:\s*([^\r\n]+)/);
+                        if (modelo_match) {
+                            data.modelo = modelo_match[1].trim();
+                        }
+                        
+                        // Fecha de fabricación
+                        const fecha_match = file_content.match(/BIOS Date:\s*([^\r\n]+)/);
+                        if (fecha_match) {
+                            data.fecha_fabricacion = fecha_match[1].trim();
+                        }
+                        
+                        // Procesador
+                        const procesador_match = file_content.match(/Processor Name:\s*([^\r\n]+)/);
+                        if (procesador_match) {
+                            data.procesador.modelo = procesador_match[1].trim();
+                        }
+                        
+                        // Núcleos del procesador
+                        const nucleos_match = file_content.match(/Number of Cores:\s*(\d+)/);
+                        if (nucleos_match) {
+                            data.procesador.nucleos = nucleos_match[1];
+                        }
+                        
+                        // Velocidad del procesador
+                        const velocidad_match = file_content.match(/Core Speed:\s*([^\r\n]+)/);
+                        if (velocidad_match) {
+                            data.procesador.velocidad = velocidad_match[1].trim();
+                        }
+                        
+                        // Carga del procesador
+                        const carga_match = file_content.match(/CPU Utilization:\s*([0-9.]+)%/);
+                        if (carga_match) {
+                            data.procesador.carga = parseFloat(carga_match[1]);
+                            
+                            // Añadir a métricas de rendimiento
+                            metricas_rendimiento.carga_cpu = data.procesador.carga;
+                        }
+                        
+                        // Sistema operativo
+                        const so_match = file_content.match(/Operating System:\s*([^\r\n]+)/);
+                        if (so_match) {
+                            data.sistemaOperativo = so_match[1].trim();
+                            
+                            // Detectar si es un sistema operativo antiguo
+                            const so_lower = data.sistemaOperativo.toLowerCase();
+                            if (so_lower.includes("windows 7") || so_lower.includes("windows vista") || so_lower.includes("windows xp")) {
+                                problemas_detectados.push({
+                                    "componente": "sistema",
+                                    "gravedad": "alta",
+                                    "descripcion": `Sistema operativo obsoleto (${data.sistemaOperativo})`
+                                });
+                            } else if (so_lower.includes("windows 8")) {
+                                problemas_detectados.push({
+                                    "componente": "sistema",
+                                    "gravedad": "media",
+                                    "descripcion": `Sistema operativo desactualizado (${data.sistemaOperativo})`
+                                });
+                            }
+                        }
+                        
+                        // Memoria RAM
+                        const ram_capacidad_match = file_content.match(/Total Memory Size:\s*(\d+)\s*GBytes/);
+                        if (ram_capacidad_match) {
+                            data.ram.capacidad = ram_capacidad_match[1] + "GB";
+                            
+                            // Añadir a métricas de rendimiento
+                            metricas_rendimiento.capacidad_ram = parseInt(ram_capacidad_match[1]);
+                            
+                            // Evaluar si la RAM es suficiente
+                            const ram_gb = parseInt(ram_capacidad_match[1]);
+                            if (ram_gb < 4) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "alta",
+                                    "descripcion": `Memoria RAM insuficiente (${ram_gb}GB)`
+                                });
+                            } else if (ram_gb < 8) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "media",
+                                    "descripcion": `Memoria RAM limitada (${ram_gb}GB)`
+                                });
+                            }
+                        }
+                        
+                        // Tipo de RAM
+                        const ram_tipo_match = file_content.match(/Memory Type:\s*([^\r\n]+)/);
+                        if (ram_tipo_match) {
+                            data.ram.tipo = ram_tipo_match[1].trim();
+                            
+                            // Detectar RAM antigua
+                            const ram_tipo_lower = data.ram.tipo.toLowerCase();
+                            if (ram_tipo_lower.includes("ddr2")) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "alta",
+                                    "descripcion": "Memoria RAM obsoleta (DDR2)"
+                                });
+                            } else if (ram_tipo_lower.includes("ddr3")) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "baja",
+                                    "descripcion": "Memoria RAM de generación anterior (DDR3)"
+                                });
+                            }
+                        }
+                        
+                        // Velocidad de RAM
+                        const ram_velocidad_match = file_content.match(/Memory Speed:\s*([^\r\n]+)/);
+                        if (ram_velocidad_match) {
+                            data.ram.velocidad = ram_velocidad_match[1].trim();
+                        }
+                        
+                        // Configuración de canales de RAM
+                        const ram_config_match = file_content.match(/Memory Channels Active:\s*(\d+)/);
+                        if (ram_config_match) {
+                            const canales = parseInt(ram_config_match[1]);
+                            data.ram.configuracion = canales === 1 ? "Canal único" : "Dual channel";
+                            
+                            // Detectar configuración subóptima
+                            if (canales === 1) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "media",
+                                    "descripcion": "Memoria RAM en configuración de canal único (rendimiento reducido)"
+                                });
+                            }
+                        }
+                        
+                        // Slots de RAM
+                        const ram_slots_match = file_content.match(/Memory Slots:\s*(\d+)/);
+                        if (ram_slots_match) {
+                            data.ram.slots_totales = parseInt(ram_slots_match[1]);
+                        }
+                        
+                        const ram_slots_usados_match = file_content.match(/Memory Modules:\s*(\d+)/);
+                        if (ram_slots_usados_match) {
+                            data.ram.slots_usados = parseInt(ram_slots_usados_match[1]);
+                        }
+                        
+                        // Uso de RAM
+                        const ram_uso_match = file_content.match(/Memory Usage:\s*([0-9.]+)%/);
+                        if (ram_uso_match) {
+                            data.ram.uso = parseFloat(ram_uso_match[1]);
+                            
+                            // Añadir a métricas de rendimiento
+                            metricas_rendimiento.uso_ram = data.ram.uso;
+                            
+                            // Evaluar uso de RAM
+                            if (data.ram.uso > 90) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "alta",
+                                    "descripcion": `Uso excesivo de memoria RAM (${data.ram.uso}%)`
+                                });
+                            } else if (data.ram.uso > 80) {
+                                problemas_detectados.push({
+                                    "componente": "ram",
+                                    "gravedad": "media",
+                                    "descripcion": `Uso elevado de memoria RAM (${data.ram.uso}%)`
+                                });
+                            }
+                        }
+                        
+                        // Batería
+                        const bateria_original_match = file_content.match(/Design Capacity:\s*(\d+)\s*mWh/);
+                        if (bateria_original_match) {
+                            data.bateria.capacidadOriginal = parseInt(bateria_original_match[1]);
+                        }
+                        
+                        const bateria_actual_match = file_content.match(/Full Charged Capacity:\s*(\d+)\s*mWh/);
+                        if (bateria_actual_match) {
+                            data.bateria.capacidadActual = parseInt(bateria_actual_match[1]);
+                            
+                            if (data.bateria.capacidadOriginal > 0) {
+                                data.bateria.capacidadRestante = Math.round(
+                                    (data.bateria.capacidadActual / data.bateria.capacidadOriginal) * 100
+                                );
+                                
+                                // Añadir a métricas de rendimiento
+                                metricas_rendimiento.capacidad_bateria = data.bateria.capacidadRestante;
+                                
+                                // Determinar estado de la batería
+                                if (data.bateria.capacidadRestante > 80) {
+                                    data.bateria.estado = "Excelente";
+                                    data.bateria.tiempoCarga = "4-5 horas";
+                                } else if (data.bateria.capacidadRestante > 60) {
+                                    data.bateria.estado = "Buen estado";
+                                    data.bateria.tiempoCarga = "3-4 horas";
+                                } else if (data.bateria.capacidadRestante > 40) {
+                                    data.bateria.estado = "Desgaste moderado";
+                                    data.bateria.tiempoCarga = "2-3 horas";
+                                    problemas_detectados.push({
+                                        "componente": "bateria",
+                                        "gravedad": "baja",
+                                        "descripcion": `Batería con desgaste moderado (${data.bateria.capacidadRestante}%)`
+                                    });
+                                } else if (data.bateria.capacidadRestante > 20) {
+                                    data.bateria.estado = "Desgaste significativo";
+                                    data.bateria.tiempoCarga = "1-2 horas";
+                                    problemas_detectados.push({
+                                        "componente": "bateria",
+                                        "gravedad": "media",
+                                        "descripcion": `Batería con desgaste significativo (${data.bateria.capacidadRestante}%)`
+                                    });
+                                } else {
+                                    data.bateria.estado = "Crítico";
+                                    data.bateria.tiempoCarga = "Menos de 1 hora";
+                                    problemas_detectados.push({
+                                        "componente": "bateria",
+                                        "gravedad": "alta",
+                                        "descripcion": `Batería en estado crítico (${data.bateria.capacidadRestante}%)`
+                                    });
+                                }
+                            }
+                        }
+                        
+                        // Ciclos de batería
+                        const ciclos_bateria_match = file_content.match(/Cycle Count:\s*(\d+)/);
+                        if (ciclos_bateria_match) {
+                            data.bateria.ciclos = parseInt(ciclos_bateria_match[1]);
+                            
+                            // Evaluar ciclos de batería
+                            if (data.bateria.ciclos > 1000) {
+                                problemas_detectados.push({
+                                    "componente": "bateria",
+                                    "gravedad": "alta",
+                                    "descripcion": `Batería con muchos ciclos de carga (${data.bateria.ciclos})`
+                                });
+                            } else if (data.bateria.ciclos > 500) {
+                                problemas_detectados.push({
+                                    "componente": "bateria",
+                                    "gravedad": "media",
+                                    "descripcion": `Batería con ciclos de carga elevados (${data.bateria.ciclos})`
+                                });
+                            }
+                        }
+                        
+                        // Voltaje de batería
+                        const voltaje_match = file_content.match(/Battery Voltage:\s*([0-9.]+)\s*V/);
+                        if (voltaje_match) {
+                            data.bateria.voltaje = voltaje_match[1] + "V";
+                        }
+                        
+                        // Fabricante de batería
+                        const fabricante_match = file_content.match(/Battery Manufacturer:\s*([^\r\n]+)/);
+                        if (fabricante_match) {
+                            data.bateria.fabricante = fabricante_match[1].trim();
+                        }
+                        
+                        // Pantalla
+                        const pantallaRes_match = file_content.match(/Current Resolution:\s*(\d+) x (\d+)/);
+                        const pantallaMm_match = file_content.match(/(\d+) x (\d+)\s+(\d+) x (\d+) mm/);
+                        
+                        if (pantallaRes_match && pantallaMm_match) {
+                            const resolucion = `${pantallaRes_match[1]}x${pantallaRes_match[2]}`;
+                            const ancho = parseInt(pantallaMm_match[3]);
+                            const alto = parseInt(pantallaMm_match[4]);
+                            const pulgadas = calcular_pulgadas(ancho, alto);
+                            data.pantalla = `Panel de ${pulgadas}" con resolución ${resolucion}`;
+                            
+                            // Evaluar resolución de pantalla
+                            const resolucion_x = parseInt(pantallaRes_match[1]);
+                            const resolucion_y = parseInt(pantallaRes_match[2]);
+                            
+                            if (resolucion_x < 1366 || resolucion_y < 768) {
+                                problemas_detectados.push({
+                                    "componente": "pantalla",
+                                    "gravedad": "baja",
+                                    "descripcion": `Resolución de pantalla baja (${resolucion})`
+                                });
+                            }
+                        }
+                        
+                        // Conectividad
+                        const ethernet_match = file_content.includes("RTL8168/8111");
+                        const wifi_match = file_content.includes("RTL8723BE");
+                        const bluetooth_match = file_content.includes("Bluetooth");
+                        
+                        const conectividad = [];
+                        if (ethernet_match) {
+                            conectividad.push("Ethernet Realtek RTL8168/8111 Gigabit");
+                        }
+                        if (wifi_match) {
+                            conectividad.push("WiFi Realtek RTL8723BE");
+                        }
+                        if (bluetooth_match) {
+                            conectividad.push("Bluetooth");
+                        }
+                        
+                        if (conectividad.length > 0) {
+                            data.conectividad = conectividad.join(" + ");
+                        }
+                        
+                        // Temperatura CPU
+                        const temp_cpu_match = file_content.match(/CPU Package Temperature:\s*([0-9.]+)\s*.C/);
+                        if (temp_cpu_match) {
+                            const temp_cpu = parseFloat(temp_cpu_match[1]);
+                            data.procesador.temperatura = `${temp_cpu}°C`;
+                            
+                            // Evaluar temperatura
+                            if (temp_cpu > 85) {
+                                problemas_detectados.push({
+                                    "componente": "procesador",
+                                    "gravedad": "alta",
+                                    "descripcion": `Temperatura crítica del procesador (${temp_cpu}°C)`
+                                });
+                            } else if (temp_cpu > 75) {
+                                problemas_detectados.push({
+                                    "componente": "procesador",
+                                    "gravedad": "media",
+                                    "descripcion": `Temperatura elevada del procesador (${temp_cpu}°C)`
+                                });
+                            }
+                        }
+                        
+                        // Espacio en disco
+                        const espacio_total_match = file_content.match(/Total Capacity:\s*([0-9.]+)\s*GB/);
+                        const espacio_libre_match = file_content.match(/Free Space:\s*([0-9.]+)\s*GB/);
+                        
+                        if (espacio_total_match && espacio_libre_match) {
+                            const espacio_total = parseFloat(espacio_total_match[1]);
+                            const espacio_libre = parseFloat(espacio_libre_match[1]);
+                            
+                            data.almacenamiento.espacio_total = espacio_total;
+                            data.almacenamiento.espacio_libre = espacio_libre;
+                            
+                            // Añadir a métricas de rendimiento
+                            metricas_rendimiento.espacio_libre_porc = (espacio_libre / espacio_total) * 100;
+                            
+                            // Evaluar espacio libre
+                            if (espacio_libre < 10) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "alta",
+                                    "descripcion": `Espacio libre crítico (${espacio_libre.toFixed(1)}GB)`
+                                });
+                            } else if (espacio_libre < 30) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "media",
+                                    "descripcion": `Poco espacio libre (${espacio_libre.toFixed(1)}GB)`
+                                });
+                            }
+                            
+                            // Evaluar fragmentación si es HDD
+                            if (data.almacenamiento.tipo === "HDD" && espacio_libre < espacio_total * 0.2) {
+                                problemas_detectados.push({
+                                    "componente": "almacenamiento",
+                                    "gravedad": "media",
+                                    "descripcion": "Posible fragmentación del disco por poco espacio libre"
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                // Análisis avanzado basado en todas las métricas recopiladas
+                
+                // Generar problemas de rendimiento
+                const problemas_rendimiento = [];
+                
+                // Problema: Disco duro mecánico lento
+                if (data.almacenamiento.tipo === "HDD") {
+                    problemas_rendimiento.push({
+                        "nombre": "Disco duro mecánico lento",
+                        "impacto": "muy alto",
+                        "porcentaje": 90,
+                        "detalles": [
+                            "Velocidad de rotación limitada (típicamente 5400 RPM)",
+                            "Tiempo de acceso promedio: ~12-15ms (vs. 0.1ms en SSD)",
+                            "Tiempos de espera de comandos (respuestas lentas ocasionales)"
+                        ]
+                    });
+                }
+                
+                // Problema: Fragmentación y envejecimiento del sistema
+                if (metricas_rendimiento.horas_uso_disco && metricas_rendimiento.horas_uso_disco > 10000) {
+                    problemas_rendimiento.push({
+                        "nombre": "Fragmentación y envejecimiento del sistema",
+                        "impacto": "alto",
+                        "porcentaje": 70,
+                        "detalles": [
+                            "Acumulación de archivos temporales y fragmentación",
+                            "Registros del sistema crecientes",
+                            `Tiempo de uso prolongado: ${metricas_rendimiento.horas_uso_disco} horas`
+                        ]
+                    });
+                }
+                
+                // Problema: Configuración de memoria en canal único
+                if (data.ram.configuracion === "Canal único") {
+                    problemas_rendimiento.push({
+                        "nombre": "Configuración de memoria en canal único",
+                        "impacto": "medio",
+                        "porcentaje": 50,
+                        "detalles": [
+                            "Reduce el ancho de banda de memoria disponible en aproximadamente 30-40%",
+                            "Afecta especialmente a aplicaciones que requieren alta transferencia de datos"
+                        ]
+                    });
+                }
+                
+                // Problema: Memoria RAM insuficiente
+                if (metricas_rendimiento.capacidad_ram) {
+                    if (metricas_rendimiento.capacidad_ram < 4) {
+                        problemas_rendimiento.push({
+                            "nombre": "Memoria RAM insuficiente",
+                            "impacto": "muy alto",
+                            "porcentaje": 85,
+                            "detalles": [
+                                `Solo ${metricas_rendimiento.capacidad_ram}GB de RAM instalada`,
+                                "Insuficiente para multitarea y aplicaciones modernas",
+                                "Causa uso excesivo de memoria virtual (archivo de paginación)"
+                            ]
+                        });
+                    } else if (metricas_rendimiento.capacidad_ram < 8) {
+                        problemas_rendimiento.push({
+                            "nombre": "Memoria RAM limitada",
+                            "impacto": "alto",
+                            "porcentaje": 65,
+                            "detalles": [
+                                `Solo ${metricas_rendimiento.capacidad_ram}GB de RAM instalada`,
+                                "Limitada para aplicaciones exigentes y multitarea intensiva"
+                            ]
+                        });
+                    }
+                }
+                
+                // Problema: Edad del procesador
+                if (data.procesador.modelo.includes("Intel Core i3") || 
+                    data.procesador.modelo.includes("Intel Celeron") || 
+                    data.procesador.modelo.includes("Intel Pentium")) {
+                    problemas_rendimiento.push({
+                        "nombre": "Procesador de gama baja o antigua",
+                        "impacto": "alto",
+                        "porcentaje": 75,
+                        "detalles": [
+                            "CPU con rendimiento limitado para estándares actuales",
+                            `Modelo: ${data.procesador.modelo}`,
+                            "Limitado para aplicaciones exigentes y multitarea"
+                        ]
+                    });
+                } else if (data.procesador.modelo.includes("Intel Core i5") && 
+                          (data.procesador.modelo.includes("2") || 
+                           data.procesador.modelo.includes("3") || 
+                           data.procesador.modelo.includes("4") || 
+                           data.procesador.modelo.includes("5"))) {
+                    problemas_rendimiento.push({
+                        "nombre": "Procesador de generación antigua",
+                        "impacto": "medio",
+                        "porcentaje": 50,
+                        "detalles": [
+                            "CPU con rendimiento moderado para estándares actuales",
+                            `Modelo: ${data.procesador.modelo}`,
+                            "Arquitectura de CPU anterior a Skylake (6ª generación)"
+                        ]
+                    });
+                }
+                
+                // Problema: Batería degradada
+                if (metricas_rendimiento.capacidad_bateria && metricas_rendimiento.capacidad_bateria < 50) {
+                    problemas_rendimiento.push({
+                        "nombre": "Batería significativamente degradada",
+                        "impacto": "alto",
+                        "porcentaje": 70,
+                        "detalles": [
+                            `Solo ${metricas_rendimiento.capacidad_bateria}% de capacidad restante`,
+                            `Tiempo de uso por carga muy reducido (${data.bateria.tiempoCarga})`,
+                            "Requiere conexión frecuente a la corriente eléctrica"
+                        ]
+                    });
+                }
+                
+                // Problema: Poco espacio libre
+                if (metricas_rendimiento.espacio_libre_porc && metricas_rendimiento.espacio_libre_porc < 15) {
+                    problemas_rendimiento.push({
+                        "nombre": "Espacio de almacenamiento crítico",
+                        "impacto": "alto",
+                        "porcentaje": 80,
+                        "detalles": [
+                            `Solo ${data.almacenamiento.espacio_libre.toFixed(1)}GB libres de ${data.almacenamiento.espacio_total.toFixed(1)}GB`,
+                            "Afecta al rendimiento del sistema operativo",
+                            "Limita la capacidad de actualización y almacenamiento de archivos"
+                        ]
+                    });
+                }
+                
+                // Asignar problemas de rendimiento al objeto de datos
+                data.problemas = problemas_rendimiento;
+                
+                // Generar recomendaciones personalizadas basadas en los problemas detectados
+                const recomendaciones = [];
+                
+                // Recomendación: Actualizar a SSD
+                if (data.almacenamiento.tipo === "HDD") {
+                    recomendaciones.push({
+                        "titulo": "Actualizar a SSD",
+                        "descripcion": "Reemplazar el disco duro mecánico por un SSD mejorará drásticamente el rendimiento del sistema. Es la mejora más efectiva para este equipo.",
+                        "prioridad": "alta",
+                        "costoEstimado": "$50-80 USD (SSD 240-500GB)",
+                        "beneficios": [
+                            "Mejora de velocidad de 5-10 veces en arranque y carga de aplicaciones",
+                            "Mayor fiabilidad y resistencia a golpes",
+                            "Menor consumo energético y generación de calor"
+                        ],
+                        "dificultad": "Baja (requiere clonar el disco o reinstalar el sistema)"
+                    });
+                }
+                
+                // Recomendación: Reemplazar la batería
+                if (metricas_rendimiento.capacidad_bateria && metricas_rendimiento.capacidad_bateria < 60) {
+                    recomendaciones.push({
+                        "titulo": "Reemplazar la batería",
+                        "descripcion": `La batería muestra un desgaste significativo con solo ${data.bateria.capacidadRestante}% de capacidad restante. Un reemplazo restaurará la movilidad del equipo.`,
+                        "prioridad": metricas_rendimiento.capacidad_bateria < 40 ? "media" : "baja",
+                        "costoEstimado": "$40-60 USD (batería compatible)",
+                        "beneficios": [
+                            "Recuperación de la autonomía original del equipo",
+                            "Mayor tiempo de uso sin conexión a la corriente",
+                            "Evita apagados inesperados por batería agotada"
+                        ],
+                        "dificultad": "Baja a Media (dependiendo del modelo)"
+                    });
+                }
+                
+                // Recomendación: Limpieza y mantenimiento
+                if (problemas_detectados.some(p => p.componente === "procesador" && p.descripcion.includes("temperatura")) || 
+                    data.almacenamiento.horasUso > 10000) {
+                    recomendaciones.push({
+                        "titulo": "Limpieza y mantenimiento",
+                        "descripcion": "Realizar una limpieza física de los ventiladores y disipadores, además de reinstalar el sistema operativo para eliminar la fragmentación y software innecesario.",
+                        "prioridad": "media",
+                        "beneficios": [
+                            "Mejora de la refrigeración y reducción de temperatura",
+                            "Eliminación de software innecesario y archivos temporales",
+                            "Optimización general del rendimiento del sistema"
+                        ],
+                        "dificultad": "Media (requiere conocimientos básicos de hardware y software)"
+                    });
+                }
+                
+                // Recomendación: Agregar módulo de RAM
+                if (metricas_rendimiento.capacidad_ram && metricas_rendimiento.capacidad_ram < 8) {
+                    if (data.ram.slots_totales > data.ram.slots_usados || data.ram.configuracion === "Canal único") {
+                        recomendaciones.push({
+                            "titulo": "Agregar módulo de RAM adicional",
+                            "descripcion": `Añadir otro módulo de ${data.ram.capacidad} idéntico permitiría operar en modo dual-channel, mejorando el rendimiento en un 20-30%.`,
+                            "prioridad": metricas_rendimiento.capacidad_ram < 4 ? "media" : "baja",
+                            "costoEstimado": `$30-45 USD (${data.ram.capacidad} ${data.ram.tipo})`,
+                            "beneficios": [
+                                "Mayor capacidad para multitarea",
+                                "Mejor rendimiento en aplicaciones exigentes",
+                                "Operación en modo dual-channel para mayor ancho de banda"
+                            ],
+                            "dificultad": "Baja (instalación sencilla)"
+                        });
+                    }
+                }
+                
+                // Recomendación: Actualizar sistema operativo
+                if (data.sistemaOperativo.includes("Windows 7") || 
+                    data.sistemaOperativo.includes("Windows Vista") || 
+                    data.sistemaOperativo.includes("Windows XP")) {
+                    recomendaciones.push({
+                        "titulo": "Actualizar sistema operativo",
+                        "descripcion": `El sistema operativo ${data.sistemaOperativo} ya no recibe actualizaciones de seguridad. Se recomienda actualizar a una versión más reciente de Windows o instalar una distribución Linux ligera.`,
+                        "prioridad": "alta",
+                        "costoEstimado": "Gratuito (Linux) o $139 USD (Windows 11 Home)",
+                        "beneficios": [
+                            "Mayor seguridad y protección contra amenazas",
+                            "Compatibilidad con software y hardware modernos",
+                            "Mejor rendimiento y gestión de recursos"
+                        ],
+                        "dificultad": "Media (requiere respaldo de datos y reinstalación)"
+                    });
+                }
+                
+                // Recomendación: Liberar espacio en disco
+                if (metricas_rendimiento.espacio_libre_porc && metricas_rendimiento.espacio_libre_porc < 20) {
+                    recomendaciones.push({
+                        "titulo": "Liberar espacio en disco",
+                        "descripcion": `El disco tiene solo ${data.almacenamiento.espacio_libre.toFixed(1)}GB libres. Se recomienda eliminar archivos innecesarios, desinstalar programas no utilizados y limpiar archivos temporales.`,
+                        "prioridad": metricas_rendimiento.espacio_libre_porc < 10 ? "alta" : "media",
+                        "beneficios": [
+                            "Mejor rendimiento del sistema operativo",
+                            "Reducción de la fragmentación",
+                            "Espacio disponible para actualizaciones y nuevos archivos"
+                        ],
+                        "dificultad": "Baja (puede realizarse con herramientas integradas)"
+                    });
+                }
+                
+                // Recomendación: Optimizar inicio del sistema
+                if (problemas_rendimiento.length > 2) {
+                    recomendaciones.push({
+                        "titulo": "Optimizar inicio del sistema",
+                        "descripcion": "Reducir los programas que se inician automáticamente con Windows para mejorar el tiempo de arranque y liberar recursos del sistema.",
+                        "prioridad": "baja",
+                        "beneficios": [
+                            "Arranque más rápido del sistema",
+                            "Menor consumo de recursos en segundo plano",
+                            "Mejor respuesta general del equipo"
+                        ],
+                        "dificultad": "Baja (puede realizarse desde el Administrador de tareas)"
+                    });
+                }
+                
+                // Asignar recomendaciones al objeto de datos
+                data.recomendaciones = recomendaciones;
+                
+                // Actualizar resumen del análisis del disco si no se ha hecho antes
+                if (data.analisisDisco.detalles.length === 0) {
+                    data.analisisDisco = {
+                        "resumen": "No se pudo realizar un análisis detallado del disco. Se recomienda ejecutar herramientas de diagnóstico específicas como CrystalDiskInfo.",
+                        "detalles": [
+                            {"nombre": "Estado general", "valor": data.almacenamiento.estado, "estado": "Desconocido"},
+                            {"nombre": "Tiempo de uso", "valor": `${data.almacenamiento.horasUso} horas`, "estado": "Informativo"}
+                        ]
+                    };
+                }
+                
+                return data;
+            }
+            
+            // Función para calcular pulgadas de pantalla
+            function calcular_pulgadas(ancho, alto) {
+                // Calcular diagonal en mm
+                const diagonal_mm = Math.sqrt(ancho * ancho + alto * alto);
+                // Convertir a pulgadas (1 pulgada = 25.4 mm)
+                return Math.round(diagonal_mm / 25.4 * 10) / 10;
+            }
+            
+            // Función para generar el informe
+            function generarInforme(data) {
+                // Fecha actual
+                const fecha = new Date().toLocaleDateString();
+                
+                // Actualizar encabezado del informe
+                document.getElementById('report-model-date').textContent = `${data.modelo} | Fecha: ${fecha}`;
+                document.getElementById('report-date').textContent = `Informe generado el ${fecha}`;
+                
+                // Determinar estado general del equipo
+                let problemas_criticos = 0;
+                let problemas_medios = 0;
+                
+                for (const problema of data.problemas) {
+                    if (problema.impacto === "muy alto" || problema.impacto === "alto") {
+                        problemas_criticos++;
+                    } else if (problema.impacto === "medio") {
+                        problemas_medios++;
+                    }
+                }
+                
+                let estado_general = "Bueno";
+                let summary_class = "summary-good";
+                
+                if (problemas_criticos >= 2) {
+                    estado_general = "Crítico";
+                    summary_class = "summary-critical";
+                } else if (problemas_criticos === 1 || problemas_medios >= 2) {
+                    estado_general = "Regular";
+                    summary_class = "summary-warning";
+                }
+                
+                // Actualizar resumen ejecutivo
+                const summaryBox = document.getElementById('summary-box');
+                summaryBox.className = `summary-box ${summary_class}`;
+                
+                let resumen_texto = `Este equipo ${data.modelo} se encuentra en estado general <strong>${estado_general}</strong>. `;
+                
+                if (estado_general === "Bueno") {
+                    resumen_texto += "El hardware funciona correctamente y no se detectaron problemas críticos.";
+                } else if (estado_general === "Regular") {
+                    resumen_texto += "Se detectaron algunos problemas que afectan el rendimiento.";
+                } else {
+                    resumen_texto += "Se detectaron problemas críticos que requieren atención inmediata.";
+                }
+                
+                document.getElementById('summary-text').innerHTML = resumen_texto;
+                
+                // Añadir recomendación principal
+                if (data.recomendaciones.length > 0) {
+                    let recomendacion_principal = data.recomendaciones.find(r => r.prioridad === "alta");
+                    if (!recomendacion_principal) {
+                        recomendacion_principal = data.recomendaciones[0];
+                    }
+                    
+                    document.getElementById('main-recommendation').innerHTML = `<strong>Recomendación principal:</strong> ${recomendacion_principal.titulo}`;
+                }
+                
+                // Actualizar especificaciones
+                document.getElementById('spec-cpu-model').textContent = data.procesador.modelo;
+                if (data.procesador.nucleos !== "Desconocido") {
+                    document.getElementById('spec-cpu-cores').textContent = `${data.procesador.nucleos} núcleos`;
+                }
+                
+                document.getElementById('spec-ram-capacity').textContent = data.ram.capacidad;
+                document.getElementById('spec-ram-config').textContent = data.ram.configuracion;
+                
+                document.getElementById('spec-storage-model').textContent = data.almacenamiento.modelo;
+                document.getElementById('spec-storage-details').textContent = `${data.almacenamiento.tipo} - ${data.almacenamiento.capacidad}`;
+                
+                document.getElementById('spec-display').textContent = data.pantalla;
+                document.getElementById('spec-connectivity').textContent = data.conectividad;
+                document.getElementById('spec-os').textContent = data.sistemaOperativo;
+                
+                // Actualizar estado de componentes
+                
+                // Almacenamiento
+                document.getElementById('storage-title').textContent = `${data.almacenamiento.tipo} (${data.almacenamiento.modelo.split(' ')[0]})`;
+                document.getElementById('storage-life-remaining').textContent = `${data.almacenamiento.vidaRestante}%`;
+                
+                const storageLifeBar = document.getElementById('storage-life-bar');
+                storageLifeBar.style.width = `${data.almacenamiento.vidaRestante}%`;
+                storageLifeBar.setAttribute('aria-valuenow', data.almacenamiento.vidaRestante);
+                
+                if (data.almacenamiento.vidaRestante > 70) {
+                    storageLifeBar.className = "progress-bar progress-bar-good";
+                } else if (data.almacenamiento.vidaRestante > 40) {
+                    storageLifeBar.className = "progress-bar progress-bar-warning";
+                } else {
+                    storageLifeBar.className = "progress-bar progress-bar-danger";
+                }
+                
+                document.getElementById('storage-hours').textContent = `${data.almacenamiento.horasUso} horas (~${Math.round(data.almacenamiento.horasUso/8760)} años)`;
+                document.getElementById('storage-time-remaining').textContent = data.almacenamiento.tiempoRestante;
+                
+                if (data.almacenamiento.temperatura !== "Desconocida") {
+                    document.getElementById('storage-temp').textContent = data.almacenamiento.temperatura;
+                } else {
+                    document.getElementById('storage-temp-container').style.display = "none";
+                }
+                
+                const storageStatus = document.getElementById('storage-status');
+                storageStatus.textContent = data.almacenamiento.estado;
+                
+                if (data.almacenamiento.estado === "Funcional") {
+                    storageStatus.className = "fw-medium text-success";
+                } else if (data.almacenamiento.estado === "Precaución") {
+                    storageStatus.className = "fw-medium text-warning";
+                } else {
+                    storageStatus.className = "fw-medium text-danger";
+                }
+                
+                // Procesador
+                document.getElementById('cpu-life-remaining').textContent = data.procesador.vidaRestante;
+                
+                if (data.procesador.temperatura !== "Normal") {
+                    document.getElementById('cpu-temp').textContent = data.procesador.temperatura;
+                } else {
+                    document.getElementById('cpu-temp-container').style.display = "none";
+                }
+                
+                if (data.procesador.carga > 0) {
+                    document.getElementById('cpu-load').textContent = `${data.procesador.carga}%`;
+                } else {
+                    document.getElementById('cpu-load-container').style.display = "none";
+                }
+                
+                document.getElementById('cpu-status').textContent = data.procesador.estado;
+                
+                // Batería
+                document.getElementById('battery-capacity-remaining').textContent = `${data.bateria.capacidadRestante}%`;
+                
+                const batteryCapacityBar = document.getElementById('battery-capacity-bar');
+                batteryCapacityBar.style.width = `${data.bateria.capacidadRestante}%`;
+                batteryCapacityBar.setAttribute('aria-valuenow', data.bateria.capacidadRestante);
+                
+                if (data.bateria.capacidadRestante > 70) {
+                    batteryCapacityBar.className = "progress-bar progress-bar-good";
+                } else if (data.bateria.capacidadRestante > 40) {
+                    batteryCapacityBar.className = "progress-bar progress-bar-warning";
+                } else {
+                    batteryCapacityBar.className = "progress-bar progress-bar-danger";
+                }
+                
+                document.getElementById('battery-original').textContent = `${data.bateria.capacidadOriginal} mWh`;
+                document.getElementById('battery-current').textContent = `${data.bateria.capacidadActual} mWh`;
+                
+                if (data.bateria.ciclos > 0) {
+                    document.getElementById('battery-cycles').textContent = data.bateria.ciclos;
+                } else {
+                    document.getElementById('battery-cycles-container').style.display = "none";
+                }
+                
+                document.getElementById('battery-time').textContent = data.bateria.tiempoCarga;
+                
+                const batteryStatus = document.getElementById('battery-status');
+                batteryStatus.textContent = data.bateria.estado;
+                
+                if (data.bateria.capacidadRestante > 70) {
+                    batteryStatus.className = "fw-medium text-success";
+                } else if (data.bateria.capacidadRestante > 40) {
+                    batteryStatus.className = "fw-medium text-warning";
+                } else {
+                    batteryStatus.className = "fw-medium text-danger";
+                }
+                
+                // RAM
+                document.getElementById('ram-life-remaining').textContent = data.ram.vidaRestante;
+                document.getElementById('ram-config').textContent = data.ram.configuracion;
+                
+                if (data.ram.velocidad !== "Desconocida") {
+                    document.getElementById('ram-speed').textContent = data.ram.velocidad;
+                } else {
+                    document.getElementById('ram-speed-container').style.display = "none";
+                }
+                
+                if (data.ram.uso > 0) {
+                    document.getElementById('ram-usage').textContent = `${data.ram.uso}%`;
+                } else {
+                    document.getElementById('ram-usage-container').style.display = "none";
+                }
+                
+                document.getElementById('ram-status').textContent = data.ram.estado;
+                
+                // Análisis de rendimiento
+                const performanceProblems = document.getElementById('performance-problems');
+                performanceProblems.innerHTML = '';
+                
+                for (const problema of data.problemas) {
+                    const problemDiv = document.createElement('div');
+                    problemDiv.className = 'mb-4';
+                    
+                    let impactClass = 'text-info';
+                    if (problema.impacto === 'muy alto') {
+                        impactClass = 'text-danger';
+                    } else if (problema.impacto === 'alto') {
+                        impactClass = 'text-warning';
+                    } else if (problema.impacto === 'medio') {
+                        impactClass = 'text-primary';
+                    }
+                    
+                    let barClass = 'bg-info';
+                    if (problema.impacto === 'muy alto') {
+                        barClass = 'bg-danger';
+                    } else if (problema.impacto === 'alto') {
+                        barClass = 'bg-warning';
+                    } else if (problema.impacto === 'medio') {
+                        barClass = 'bg-primary';
+                    }
+                    
+                    problemDiv.innerHTML = `
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-medium">${problema.nombre}</span>
+                            <span class="fw-medium ${impactClass}">Impacto ${problema.impacto}</span>
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar ${barClass}" 
+                                role="progressbar" 
+                                style="width: ${problema.porcentaje}%" 
+                                aria-valuenow="${problema.porcentaje}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                        <ul class="small text-muted ps-4">
+                            ${problema.detalles.map(detalle => `<li>${detalle}</li>`).join('')}
+                        </ul>
+                    `;
+                    
+                    performanceProblems.appendChild(problemDiv);
+                }
+                
+                // Análisis del disco
+                document.getElementById('disk-analysis-summary').textContent = data.analisisDisco.resumen;
+                
+                const diskAnalysisDetails = document.getElementById('disk-analysis-details');
+                diskAnalysisDetails.innerHTML = '';
+                
+                for (const detalle of data.analisisDisco.detalles) {
+                    const li = document.createElement('li');
+                    
+                    let stateClass = 'text-success';
+                    if (['Precaución', 'Desgaste moderado'].includes(detalle.estado)) {
+                        stateClass = 'text-warning';
+                    } else if (!['Excelente', 'Normal'].includes(detalle.estado)) {
+                        stateClass = 'text-danger';
+                    }
+                    
+                    li.innerHTML = `
+                        <strong>${detalle.nombre}</strong>: ${detalle.valor} 
+                        <span class="${stateClass}">(${detalle.estado})</span>
+                    `;
+                    
+                    diskAnalysisDetails.appendChild(li);
+                }
+                
+                // Recomendaciones
+                const recommendations = document.getElementById('recommendations');
+                recommendations.innerHTML = '';
+                
+                for (const recomendacion of data.recomendaciones) {
+                    const recDiv = document.createElement('div');
+                    
+                    let recClass = 'recommendation-low';
+                    let iconClass = 'text-primary';
+                    if (recomendacion.prioridad === 'alta') {
+                        recClass = 'recommendation-high';
+                        iconClass = 'text-danger';
+                    } else if (recomendacion.prioridad === 'media') {
+                        recClass = 'recommendation-medium';
+                        iconClass = 'text-warning';
+                    }
+                    
+                    recDiv.className = `recommendation ${recClass}`;
+                    
+                    let benefitsHtml = '';
+                    if (recomendacion.beneficios) {
+                        benefitsHtml = `
+                            <div class="mb-2">
+                                <strong>Beneficios:</strong>
+                                <ul class="benefit-list mb-2">
+                                    ${recomendacion.beneficios.map(beneficio => `<li class="benefit-item">${beneficio}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    
+                    let costoHtml = '';
+                    if (recomendacion.costoEstimado) {
+                        costoHtml = `
+                            <div class="me-3">
+                                <strong>Costo estimado:</strong> ${recomendacion.costoEstimado}
+                            </div>
+                        `;
+                    }
+                    
+                    let dificultadHtml = '';
+                    if (recomendacion.dificultad) {
+                        dificultadHtml = `
+                            <div>
+                                <strong>Dificultad:</strong> ${recomendacion.dificultad}
+                            </div>
+                        `;
+                    }
+                    
+                    recDiv.innerHTML = `
+                        <h5 class="d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle me-2 ${iconClass}" viewBox="0 0 16 16">
+                                <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                                <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+                            </svg>
+                            ${recomendacion.titulo}
+                        </h5>
+                        <p class="text-muted mb-2">${recomendacion.descripcion}</p>
+                        
+                        ${benefitsHtml}
+                        
+                        <div class="d-flex flex-wrap">
+                            ${costoHtml}
+                            ${dificultadHtml}
+                        </div>
+                    `;
+                    
+                    recommendations.appendChild(recDiv);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
